@@ -129,3 +129,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 /venv/
+notebooks/fair_facts_v2_20260123.ipynb
+notebooks/fair_facts_v2_viz_20260126.ipynb
+notebooks/fair_facts_v2_viz_20260130.ipynb
+notebooks/fair_facts_v2_viz_all.ipynb
+notebooks/fair_facts_v2_viz_total_20260204.ipynb
+notebooks/fair_facts_v2_viz_total_20260204.py
