@@ -19,9 +19,9 @@ to a Python application and run it from the command line.  Afterward a successfu
 
 A sample session follows:
 
-gtamkin@GSLAL032412001:/Users/gtamkin$ ssh -XY gtamkin@discover.nccs.nasa.gov
-gtamkin@discover14:/home/gtamkin$ cd /tmp
-gtamkin@discover14:/tmp$ git clone https://github.com/nasa-nccs-hpda/sealevel.git
+- gtamkin@GSLAL032412001:/Users/gtamkin$ ssh -XY gtamkin@discover.nccs.nasa.gov
+- gtamkin@discover14:/home/gtamkin$ cd /tmp
+- gtamkin@discover14:/tmp$ git clone https://github.com/nasa-nccs-hpda/sealevel.git
 Cloning into 'sealevel'...
 remote: Enumerating objects: 538, done.
 remote: Counting objects: 100% (538/538), done.
@@ -29,10 +29,10 @@ remote: Compressing objects: 100% (338/338), done.
 remote: Total 538 (delta 176), reused 499 (delta 155), pack-reused 0 (from 0)
 Receiving objects: 100% (538/538), 16.56 MiB | 39.89 MiB/s, done.
 Resolving deltas: 100% (176/176), done.
-gtamkin@discover14:/tmp$ cd sealevel/notebooks/
-gtamkin@discover14:/tmp/sealevel/notebooks$ module load anaconda
+- gtamkin@discover14:/tmp$ cd sealevel/notebooks/
+- gtamkin@discover14:/tmp/sealevel/notebooks$ module load anaconda
 activate base
-(base) gtamkin@discover14:/tmp/sealevel/notebooks$ jupyter nbconvert --to python 3_fair_facts_v2_total_viz.ipynb 
+- (base) gtamkin@discover14:/tmp/sealevel/notebooks$ jupyter nbconvert --to python 3_fair_facts_v2_total_viz.ipynb 
 [NbConvertApp] Converting notebook 3_fair_facts_v2_total_viz.ipynb to python
 [NbConvertApp] Writing 187627 bytes to 3_fair_facts_v2_total_viz.py
 
