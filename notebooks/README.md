@@ -35,11 +35,9 @@ activate base
 - (base) gtamkin@discover14:/tmp/sealevel/notebooks$ jupyter nbconvert --to python 3_fair_facts_v2_total_viz.ipynb 
 [NbConvertApp] Converting notebook 3_fair_facts_v2_total_viz.ipynb to python
 [NbConvertApp] Writing 187627 bytes to 3_fair_facts_v2_total_viz.py
-
-
+- (base) gtamkin@discover14:/tmp/sealevel/notebooks$ python 3_fair_facts_v2_total_viz.py 
 
 # If you see the following error, go back and run the first two notebooks from Jupyter Hub to seed the input directories
-(base) gtamkin@discover14:/tmp/sealevel/notebooks$ python 3_fair_facts_v2_total_viz.py 
 
 ./data/output/fair:
   (directory doesn't exist)
