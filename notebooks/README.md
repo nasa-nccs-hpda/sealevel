@@ -6,16 +6,16 @@
 ## Objectives
 
 - These Notebooks run in Discover jupyter hub:  https://jh-discover.nccs.nasa.gov.  Execute in the order below and if any fail, consult the NOTE below:
-1. [Runs select FACTS modules (e.g., fair, lws, and stereodynamics) ](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/1_fair_facts_v2.ipynb)
-2. [Aggregates total sealevel deltas from  #1 output ](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/2_fair_facts_v2_total.ipynb)
-3. [Visualizes total sealevel deltas from #2 output ](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/3_fair_facts_v2_total_viz.ipynb)
+1. [Runs select FACTS modules (e.g., fair, lws, and stereodynamics) ](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/1_fair_facts_v2.ipynb) ~4 minutes
+2. [Aggregates total sealevel deltas from  #1 output ](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/2_fair_facts_v2_total.ipynb) ~2 minutes
+3. [Visualizes total sealevel deltas from #2 output ](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/3_fair_facts_v2_total_viz.ipynb) ~2 minutes
 
 NOTES:
 
 1) For kernel selection, use 'conda env:base' for 3_fair_facts_v2_viz_total, and  'conda env:viz' for the other two.  
 2) Depending on the runtime environment where the Notebooks are launched, certain Python packages may reach out to pull in other dependencies.  If running on 
 the Discover jupyter hub, the gpu node has no internet access allowed, so these dependencies cannot be resolved.  A workaround is to temporarily convert the Notebook
-to a Python application and run it from the command line.  Afterward a successfully run, the Notebook should work also because it can resolve the dependencies. 
+to a Python application and run it from the command line.  After a successful run, the Notebook should work also because it can resolve the dependencies. 
 
 A sample session follows:
 
