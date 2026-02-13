@@ -6,14 +6,15 @@
 ## Objectives
 
 - These Notebooks run in Discover jupyter hub:  https://jh-discover.nccs.nasa.gov.  Execute in the order below and if any fail, consult the NOTE below:
-1. [Runs select FACTS modules (e.g., fair, lws, and stereodynamics) ](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/1_fair_facts_v2.ipynb) ~4 minutes
-2. [Aggregates total sealevel deltas from  #1 output ](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/2_fair_facts_v2_total.ipynb) ~2 minutes
-3. [Visualizes total sealevel deltas from #2 output ](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/3_fair_facts_v2_total_viz.ipynb) ~2 minutes
+1. [Runs select FACTS modules (e.g., fair, lws, and stereodynamics) and aggregates total sealevel deltas](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/2_fair_facts_v2_aggregate.ipynb) ~5 minutes
+3. [Visualizes total sealevel deltas from previous output ](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/3_fair_facts_v2_total_viz.ipynb) ~2 minutes
 
 NOTES:
 
 1) For kernel selection, use 'conda env:base' for 3_fair_facts_v2_viz_total, and  'conda env:viz' for the other two.  
-2) Depending on the runtime environment where the Notebooks are launched, certain Python packages may reach out to pull in other dependencies.  If running on 
+2) Restart and clear kernel outputs between runs.
+3) The workflows will not overwrite existing data files, so manual intervention is required if a workflow fails when attempting to write output files. 
+4) Depending on the runtime environment where the Notebooks are launched, certain Python packages may reach out to pull in other dependencies.  If running on 
 the Discover jupyter hub, the gpu node has no internet access allowed, so these dependencies cannot be resolved.  A workaround is to temporarily convert the Notebook
 to a Python application and run it from the command line.  After a successful run, the Notebook should work also because it can resolve the dependencies. 
 
@@ -37,7 +38,7 @@ activate base
 [NbConvertApp] Writing 187627 bytes to 3_fair_facts_v2_total_viz.py
 - (base) gtamkin@discover14:/tmp/sealevel/notebooks$ python 3_fair_facts_v2_total_viz.py 
 
-# If you see the following error, go back and run the first two notebooks from Jupyter Hub to seed the input directories
+# If you see the following error, go back and run the first notebook(s) from Jupyter Hub to seed the input directories
 
 ./data/output/fair:
   (directory doesn't exist)
