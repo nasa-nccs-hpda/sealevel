@@ -37,6 +37,9 @@ activate base
 [NbConvertApp] Converting notebook 3_fair_facts_v2_total_viz.ipynb to python
 [NbConvertApp] Writing 187627 bytes to 3_fair_facts_v2_total_viz.py
 - (base) gtamkin@discover14:/tmp/sealevel/notebooks$ python 3_fair_facts_v2_total_viz.py 
+```
+Error Handling:
+```python
 
 # If you see the following error, go back and run the first notebook(s) from Jupyter Hub to seed the input directories
 
