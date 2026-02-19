@@ -19,7 +19,7 @@ the Discover jupyter hub, the gpu node has no internet access allowed, so these 
 to a Python application and run it from the command line.  After a successful run, the Notebook should work also because it can resolve the dependencies. 
 
 A sample session follows:
-
+```python
 - gtamkin@GSLAL032412001:/Users/gtamkin$ ssh -XY gtamkin@discover.nccs.nasa.gov
 - gtamkin@discover14:/home/gtamkin$ cd /tmp
 - gtamkin@discover14:/tmp$ git clone https://github.com/nasa-nccs-hpda/sealevel.git
@@ -101,6 +101,6 @@ Traceback (most recent call last):
     value = self._cache[key]
             ~~~~~~~~~~~^^^^^
 KeyError: [<class 'netCDF4._netCDF4.Dataset'>, ('/tmp/sealevel/notebooks/data/output/totaled_output_all_lslr.nc',), 'r', (('clobber', True), ('diskless', False), ('format', 'NETCDF4'), ('persist', False)), 'f3201492-c53a-4140-9ce6-5d36141b7e1a']
-
+```
 
 
