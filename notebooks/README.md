@@ -6,7 +6,7 @@
 ## Objectives
 
 - These Notebooks run in Discover jupyter hub:  https://jh-discover.nccs.nasa.gov.  Execute in the order below and if any fail, consult the NOTE below:
-1. [Runs select FACTS modules (e.g., fair, lws, and stereodynamics) and aggregates total sealevel deltas](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/2_fair_facts_v2_aggregate.ipynb) ~5 minutes
+1. [Runs select FACTS modules (e.g., fair, lws, and stereodynamics) and aggregates total sealevel deltas](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/1_fair_facts_v2_aggregate.ipynb) ~5 minutes
 3. [Visualizes total sealevel deltas from previous output ](https://github.com/nasa-nccs-hpda/sealevel/blob/main/notebooks/3_fair_facts_v2_total_viz.ipynb) ~2 minutes
 
 NOTES:
