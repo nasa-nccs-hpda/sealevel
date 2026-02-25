@@ -11,7 +11,7 @@
 
 NOTES:
 
-1) For kernel selection, use 'conda env:base' for 3_fair_facts_v2_viz_total, and  'conda env:viz' for the other two.  
+1) For kernel selection, use 'conda env:base' for 3_fair_facts_v2_viz_total, and  'conda env:viz' for the others.  
 2) Restart and clear kernel outputs between runs.
 3) The workflows will not overwrite existing data files, so manual intervention is required if a workflow fails when attempting to write output files. 
 4) Depending on the runtime environment where the Notebooks are launched, certain Python packages may reach out to pull in other dependencies.  If running on 
