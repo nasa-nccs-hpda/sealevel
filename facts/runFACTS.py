@@ -174,7 +174,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="The Framework for Assessing Changes To Sea-level (FACTS)")
 
     # Add arguments for the resource and experiment configuration files
-    parser.add_argument('edir', help="Experiment Directory")
+#    parser.add_argument('edir', help="Experiment Directory")
     parser.add_argument('--shellscript', help="Turn experiment config into a shell script (only limited file handling, works best with single-module experiments)", action="store_true")
     parser.add_argument('--debug', help="Enable debug mode (check that configuration files parse, do not execute)", action="store_true")
     parser.add_argument('--resourcedir', help="Directory containing resource files (default=./resources/)", type=str, default='./resources')
@@ -184,7 +184,9 @@ if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
  
-    # Does the experiment directory exist?
+    args.edir = "/home/gtamkin/_sealevel/facts/experiments/dummy.input"
+
+   # Does the experiment directory exist?
     if not os.path.isdir(args.edir):
         print('{0} does not exist'.format(args.edir))
         sys.exit(1)
