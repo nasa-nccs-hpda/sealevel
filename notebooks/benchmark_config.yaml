@@ -1,0 +1,76 @@
+# FACTS Benchmark Configuration
+# ==============================
+
+name: "My Benchmark Suite"
+description: "Example benchmark configuration"
+author: "username"
+
+global:
+  account: "ilab"
+  scenario: "ssp585"
+  phases: ["modules"]
+  facts_script: "./run_facts.py"
+  input_dir: "/discover/nobackup/projects/sealevel/facts2.0/data/input"
+  container_dir: "/discover/nobackup/projects/sealevel/facts2.0/containers"
+
+benchmarks:
+  # CPU test
+  - name: "cpu_test"
+    partition: "compute"
+    cpus: 16
+    mem: "64G"
+    time: "02:00:00"
+    nsamps: 2000
+    description: "CPU baseline test"
+    tags: ["cpu", "baseline"]
+
+  # GPU test
+  - name: "gpu_test"
+    partition: "gpu_a100"
+    gres: "gpu:1"
+    constraint: "rome"
+    time: "02:00:00"
+    nsamps: 2000
+    description: "GPU baseline test"
+    tags: ["gpu", "baseline"]
+
+# Auto-generate range configurations
+ranges:
+  cpu_scaling:
+    enabled: true
+    partition: "compute"
+    cpus: [4, 8, 16, 32, 64, 128, 256, 512, 1024]
+    mem: "64G"
+    time: "02:00:00"
+    nsamps: 2000
+    name_template: "cpu_{cpus}"
+    description_template: "CPU scaling: 2000 samples  {cpus} cores"
+    tags: ["cpu", "scaling"]
+
+  gpu_scaling:
+    enabled: true
+    partition: "gpu_a100"
+    gres_range: [1, 2, 3, 4]
+    constraint: "rome"
+    time: "02:00:00"
+    nsamps: 2000
+    name_template: "gpu_{ngpu}"
+    description_template: "GPU scaling: {nsamps} samples {ngpu} GPUs"
+    tags: ["gpu", "scaling"]
+
+  sample_scaling:
+    enabled: true
+    partition: "compute"
+    cpus: 16
+    mem: "64G"
+    nsamps_range: [10, 20, 50, 100, 2000, 8000]
+    time_map:
+      10: "01:00:00"
+      20: "02:00:00"
+      50: "05:00:00"
+      100: "10:00:00"
+      2000: "12:00:00"
+      8000: "12:00:00"
+    name_template: "samps_{nsamps}"
+    description_template: "Sample scaling: {nsamps} samples"
+    tags: ["samples"]

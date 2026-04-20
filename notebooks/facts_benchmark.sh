@@ -44,8 +44,13 @@ fi
 declare -a CONFIGS=(
     # Small configurations
     "small_basic|datamove||1|1|4GB|01:00:00|Basic small test (datamove, 1 CPUs, 4GB)"
+    "small_basic|datamove||1|10|4GB|01:00:00|Basic small test (datamove, 10 CPUs, 4GB)"
+    "small_basic|datamove||1|100|4GB|01:00:00|Basic small test (datamove, 100 CPUs, 4GB)"
     "small_basic|compute||1|1|4GB|01:00:00|Basic small test (compute, 1 CPUs, 4GB)"
-    "small_basic|gpu_a100||1|1|4GB|01:00:00|Basic small test (gpu_a100, 1 CPUs, 4GB)"
+    "small_basic|compute||1|10|4GB|01:00:00|Basic small test (compute, 10 CPUs, 4GB)"
+    "small_basic|compute||1|100|4GB|01:00:00|Basic small test (compute, 100 CPUs, 4GB)"
+#    "small_basic|compute||1|1|4GB|01:00:00|Basic small test (compute, 1 CPUs, 4GB)"
+#    "small_basic|gpu_a100||1|1|4GB|01:00:00|Basic small test (gpu_a100, 1 CPUs, 4GB)"
     #"small_basic|datamove||1|4|16GB|01:00:00|Basic small test (4 CPUs, 16GB)"
 #    "small_mid|compute||1|8|32GB|02:00:00|Small with more resources (8 CPUs, 32GB)"
 )

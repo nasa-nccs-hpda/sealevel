@@ -18,7 +18,7 @@ NOTES:
 the Discover jupyter hub, the gpu node has no internet access allowed, so these dependencies cannot be resolved.  A workaround is to temporarily convert the Notebook
 to a Python application and run it from the command line.  After a successful run, the Notebook should work also because it can now resolve the dependencies. 
 
-A sample Discover session follows below:
+A sample Discover session follows:
 ```python
 gtamkin@GSLAL032412001:/Users/gtamkin$ ssh -XY gtamkin@discover.nccs.nasa.gov
 gtamkin@discover14:/home/gtamkin$ cd /tmp
