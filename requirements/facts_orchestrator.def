@@ -1,0 +1,66 @@
+Bootstrap: docker
+From: python:3.11-slim
+
+%labels
+    Author gtamkin
+    Version 1.0
+    Description FACTS Workflow Orchestrator Container
+
+%help
+    This container provides the FACTS workflow orchestration system.
+    
+    It includes:
+    - run_facts.py: Main workflow execution script
+    - facts_benchmark.py: Benchmarking and analysis tools
+    - All required Python dependencies
+    
+    Usage:
+        singularity exec facts_orchestrator.sif python run_facts.py --help
+        singularity exec facts_orchestrator.sif python facts_benchmark.py --help
+
+%files
+    run_facts.py /opt/facts/run_facts.py
+    facts_benchmark.py /opt/facts/facts_benchmark.py
+
+%post
+    # Update and install system dependencies
+    apt-get update && apt-get install -y \
+        wget \
+        curl \
+        vim \
+        git \
+        && rm -rf /var/lib/apt/lists/*
+    
+    # Install Python dependencies
+    pip install --no-cache-dir \
+        pyyaml \
+        numpy \
+        matplotlib \
+        pandas \
+        seaborn
+    
+    # Make scripts executable
+    chmod +x /opt/facts/run_facts.py
+    chmod +x /opt/facts/facts_benchmark.py
+    
+    # Create standard directories
+    mkdir -p /input /output /mnt/data_in /mnt/data_out /mnt/fair
+    
+    # Clean up
+    apt-get clean
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+%environment
+    export PATH=/opt/facts:$PATH
+    export PYTHONUNBUFFERED=1
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+
+%runscript
+    exec python /opt/facts/run_facts.py "$@"
+
+%test
+    python --version
+    python -c "import yaml; print('PyYAML:', yaml.__version__)"
+    python -c "import asyncio; print('asyncio available')"
+    ls -la /opt/facts/
