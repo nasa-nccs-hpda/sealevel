@@ -51,7 +51,7 @@ class BenchmarkConfig:
     gres: Optional[str] = None
     nsamps: int = 20
     scenario: str = "ssp585"
-    phases: List[str] = field(default_factory=lambda: ["modules"])
+    phases: List[str] = field(default_factory=lambda: ["modules","modules2","fair","total"])
     constraint: Optional[str] = None
     qos: Optional[str] = None
     description: str = ""
@@ -87,7 +87,7 @@ def load_config_file(config_path: str) -> Tuple[BenchmarkSuite, List[BenchmarkCo
     global_cfg = cfg.get('global', {})
     account = global_cfg.get('account', 'ilab')
     scenario = global_cfg.get('scenario', 'ssp585')
-    default_phases = global_cfg.get('phases', ['modules'])
+    default_phases = global_cfg.get('phases', ['modules','modules2','fair','total'])
     facts_script = global_cfg.get('facts_script', './run_facts.py')
     input_dir = global_cfg.get('input_dir', '/discover/nobackup/projects/sealevel/facts2.0/data/input')
     container_dir = global_cfg.get('container_dir', '/discover/nobackup/projects/sealevel/facts2.0/containers')

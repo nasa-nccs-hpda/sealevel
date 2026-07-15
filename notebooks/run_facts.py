@@ -74,7 +74,7 @@ class Config:
     nsamps: int = 20
     scenario: str = "ssp585"
     pipeline_id: str = "1234"
-    phases: List[str] = field(default_factory=lambda: ["modules", "modules2", "total"])
+    phases: List[str] = field(default_factory=lambda: ["modules", "modules2","fair","total"])
     dry_run: bool = False
     verbose: bool = False
 
@@ -335,6 +335,16 @@ async def run_workflow(cfg: Config, logger: logging.Logger) -> Dict[str, TaskRes
     cmds = build_commands(cfg)
     results = {}
     
+    if "fair" in cfg.phases:
+        logger.info("=" * 50)
+        logger.info("PHASE: fair")
+        logger.info("=" * 50)
+        
+        tasks = {n: asyncio.create_task(run_task(n, cmds[n], cfg.dry_run, logger))
+                 for n in ['fair']}
+        for n, t in tasks.items():
+            results[n] = await t
+            
     if "modules" in cfg.phases:
         logger.info("=" * 50)
         logger.info("PHASE: modules")
@@ -469,8 +479,8 @@ def parse_args():
     w = p.add_argument_group("Workflow")
     w.add_argument("--nsamps", type=int, default=20)
     w.add_argument("--scenario", default="ssp585")
-    w.add_argument("--phases", nargs="+", default=["modules", "modules2", "total"],
-                   choices=["modules", "modules2", "total"])
+    w.add_argument("--phases", nargs="+", default=["modules", "modules2", "fair", "total"],
+                   choices=["modules", "modules2", "fair", "total"])
     
     # Paths
     pa = p.add_argument_group("Paths")
