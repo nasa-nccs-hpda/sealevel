@@ -27,7 +27,7 @@ cd test/
 git clone https://github.com/nasa-nccs-hpda/sealevel.git
 cd sealevel/notebooks/
 ```
-> Note: Replace '/home/gtamkin/test/sealevel/notebooks' throughout the remainder of the guide with the path you created in #1.
+> Note: Replace '<install path>/sealevel/notebooks' throughout the remainder of the guide with the path you created in #1.
 ---
 
 ### 2. Run a Benchmark
@@ -36,16 +36,16 @@ Run the benchmark suite with the Singularity and Slurm bindings shown below:
 
 ```bash
 time /usr/local/other/singularity/4.0.3/bin/singularity exec \
-  -B /usr/bin/sbatch,/etc/slurm/slurm.conf,/etc/slurm/preempt.conf,/etc/slurm/sched.preempt.conf,/etc/slurm/logacct.conf,/etc/slurm/nodesparts.conf,/usr/lib64/slurm,/usr/lib64/slurm/libslurmfull.so,/usr/slurm/lib64/slurm,/usr/slurm/lib64/slurm/auth_munge.so,/usr/lib64/libmunge.so.2,/run/munge/munge.socket.2,/usr/bin/squeue,/usr/bin/sacct,/home/gtamkin/test/sealevel/notebooks \
+  -B /usr/bin/sbatch,/etc/slurm/slurm.conf,/etc/slurm/preempt.conf,/etc/slurm/sched.preempt.conf,/etc/slurm/logacct.conf,/etc/slurm/nodesparts.conf,/usr/lib64/slurm,/usr/lib64/slurm/libslurmfull.so,/usr/slurm/lib64/slurm,/usr/slurm/lib64/slurm/auth_munge.so,/usr/lib64/libmunge.so.2,/run/munge/munge.socket.2,/usr/bin/squeue,/usr/bin/sacct,<install path>/sealevel/notebooks \
   /discover/nobackup/projects/sealevel/facts2.0/containers/sealevel-facts-total_latest.sif \
-  python /home/gtamkin/test/sealevel/notebooks/facts_benchmark.py \
-  --run --config /home/gtamkin/test/sealevel/notebooks/fair_config.yaml
+  python <install path>/sealevel/notebooks/facts_benchmark.py \
+  --run --config <install path>/sealevel/notebooks/fair_config.yaml
 ```
 
 This submits the benchmark job and creates a results directory such as:
 
 ```text
-/home/gtamkin/test/sealevel/notebooks/benchmark_20260715_120307
+<install path>/sealevel/notebooks/benchmark_20260715_120307
 ```
 
 Example output will include a summary similar to the following:
@@ -65,10 +65,10 @@ Monitor job progress with:
 
 ```bash
 time /usr/local/other/singularity/4.0.3/bin/singularity exec \
-  -B /usr/bin/sbatch,/etc/slurm/slurm.conf,/etc/slurm/preempt.conf,/etc/slurm/sched.preempt.conf,/etc/slurm/logacct.conf,/etc/slurm/nodesparts.conf,/usr/lib64/slurm,/usr/lib64/slurm/libslurmfull.so,/usr/slurm/lib64/slurm,/usr/slurm/lib64/slurm/auth_munge.so,/usr/lib64/libmunge.so.2,/run/munge/munge.socket.2,/usr/bin/squeue,/usr/bin/sacct,/home/gtamkin/test/sealevel/notebooks \
+  -B /usr/bin/sbatch,/etc/slurm/slurm.conf,/etc/slurm/preempt.conf,/etc/slurm/sched.preempt.conf,/etc/slurm/logacct.conf,/etc/slurm/nodesparts.conf,/usr/lib64/slurm,/usr/lib64/slurm/libslurmfull.so,/usr/slurm/lib64/slurm,/usr/slurm/lib64/slurm/auth_munge.so,/usr/lib64/libmunge.so.2,/run/munge/munge.socket.2,/usr/bin/squeue,/usr/bin/sacct,<install path>/sealevel/notebooks \
   /discover/nobackup/projects/sealevel/facts2.0/containers/sealevel-facts-total_latest.sif \
-  python /home/gtamkin/test/sealevel/notebooks/facts_benchmark.py \
-  --status --results-dir /home/gtamkin/test/sealevel/notebooks/benchmark_20260715_120307
+  python <install path>/sealevel/notebooks/facts_benchmark.py \
+  --status --results-dir <install path>/sealevel/notebooks/benchmark_20260715_120307
 ```
 
 This reports the current state of each benchmark job, including whether it is running, pending, completed, or failed.
@@ -81,10 +81,10 @@ After jobs finish, generate a report with:
 
 ```bash
 time /usr/local/other/singularity/4.0.3/bin/singularity exec \
-  -B /usr/bin/sbatch,/etc/slurm/slurm.conf,/etc/slurm/preempt.conf,/etc/slurm/sched.preempt.conf,/etc/slurm/logacct.conf,/etc/slurm/nodesparts.conf,/usr/lib64/slurm,/usr/lib64/slurm/libslurmfull.so,/usr/slurm/lib64/slurm,/usr/slurm/lib64/slurm/auth_munge.so,/usr/lib64/libmunge.so.2,/run/munge/munge.socket.2,/usr/bin/squeue,/usr/bin/sacct,/home/gtamkin/test/sealevel/notebooks \
+  -B /usr/bin/sbatch,/etc/slurm/slurm.conf,/etc/slurm/preempt.conf,/etc/slurm/sched.preempt.conf,/etc/slurm/logacct.conf,/etc/slurm/nodesparts.conf,/usr/lib64/slurm,/usr/lib64/slurm/libslurmfull.so,/usr/slurm/lib64/slurm,/usr/slurm/lib64/slurm/auth_munge.so,/usr/lib64/libmunge.so.2,/run/munge/munge.socket.2,/usr/bin/squeue,/usr/bin/sacct,<install path>/sealevel/notebooks \
   /discover/nobackup/projects/sealevel/facts2.0/containers/sealevel-facts-total_latest.sif \
-  python /home/gtamkin/test/sealevel/notebooks/facts_benchmark.py \
-  --analyze --results-dir /home/gtamkin/test/sealevel/notebooks/benchmark_20260715_120307
+  python <install path>/sealevel/notebooks/ facts_benchmark.py \
+  --analyze --results-dir <install path>/sealevel/notebooks/ benchmark_20260715_120307
 ```
 
 The analysis step creates:
@@ -115,7 +115,7 @@ Inspect the run directory and generated results:
 ```bash
 module load netcdf4
 
-ls -alt /home/gtamkin/test/sealevel/notebooks/benchmark_20260715_120307/samps_10_20260715_120307/
+ls -alt <install path>/sealevel/notebooks/ benchmark_20260715_120307/samps_10_20260715_120307/
 ```
 
 You should see output files such as:
@@ -129,7 +129,7 @@ You should see output files such as:
 To confirm the sample count, inspect the NetCDF output:
 
 ```bash
-ncdump -h /home/gtamkin/test/sealevel/notebooks/benchmark_20260715_120307/samps_10_20260715_120307/facts_output/fair/climate.nc | grep samples
+ncdump -h <install path>/sealevel/notebooks/benchmark_20260715_120307/samps_10_20260715_120307/facts_output/fair/climate.nc | grep samples
 ```
 
 The reported sample count should match the `nsamps_range` setting in `fair_config.yaml`.
