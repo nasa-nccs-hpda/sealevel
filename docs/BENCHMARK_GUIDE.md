@@ -27,7 +27,7 @@ cd test/
 git clone https://github.com/nasa-nccs-hpda/sealevel.git
 cd sealevel/notebooks/
 ```
-> Note: ```Replace <install-path>/sealevel/notebooks throughout the remainder of the guide with the path you created in #1.```
+> ```Note: Replace <install-path>/sealevel/notebooks below with the path you created in #1.```
 ---
 
 ### 2. Run a Benchmark
