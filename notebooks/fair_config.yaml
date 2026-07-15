@@ -1,0 +1,35 @@
+# FACTS Benchmark Configuration
+# ==============================
+
+name: "Fair Module Sample"
+description: "Bootstrap various runs of the Fair module with user-specifiable sample ranges (nsamps_range) and sample time (time_map)"
+author: "username"
+
+global:
+  account: "ilab"
+  scenario: "ssp585"
+  phases: ["fair"]
+  facts_script: "/discover/nobackup/projects/eis_freshwater/gtamkin/facts2.0/notebooks/run_facts.py"
+    #facts_script: "./run_facts.py"
+  input_dir: "/discover/nobackup/projects/sealevel/facts2.0/data/input"
+  container_dir: "/discover/nobackup/projects/sealevel/facts2.0/containers"
+
+# Auto-generate range configurations
+ranges:
+  sample_scaling:
+    enabled: true
+    partition: "compute"
+    cpus: 16
+    mem: "64G"
+    nsamps_range: [10]
+      #nsamps_range: [10, 20, 50, 100, 2000, 8000]
+    time_map:
+      10: "01:00:00"
+      20: "02:00:00"
+      50: "05:00:00"
+      100: "10:00:00"
+      2000: "12:00:00"
+      8000: "12:00:00"
+    name_template: "samps_{nsamps}"
+    description_template: "Sample scaling: {nsamps} samples"
+    tags: ["samples"]

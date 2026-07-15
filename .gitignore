@@ -135,3 +135,7 @@ notebooks/fair_facts_v2_viz_20260130.ipynb
 notebooks/fair_facts_v2_viz_all.ipynb
 notebooks/fair_facts_v2_viz_total_20260204.ipynb
 notebooks/fair_facts_v2_viz_total_20260204.py
+
+# experiments
+/experiments
+/facts/experiments
