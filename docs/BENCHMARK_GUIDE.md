@@ -27,7 +27,7 @@ cd test/
 git clone https://github.com/nasa-nccs-hpda/sealevel.git
 cd sealevel/notebooks/
 ```
-
+> Note: Replace '/home/gtamkin/test/sealevel/notebooks' throughout the remainder of the guide with the path you created in #1.
 ---
 
 ### 2. Run a Benchmark
