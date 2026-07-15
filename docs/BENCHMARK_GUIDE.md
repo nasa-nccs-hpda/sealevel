@@ -2,249 +2,157 @@
 
 ## Overview
 
-The FACTS Benchmark Suite orchestrates sea-level rise workflow benchmarks through Slurm, supporting CPU/GPU scaling, sample size analysis, and performance reporting.
+The FACTS Benchmark Suite runs benchmark workflows for the FAIR module through Slurm. It supports CPU and GPU scaling, sample-size sweeps, and automated performance reporting.
+
+> Note: The commands below assume execution on Discover. If you run them elsewhere, update the Slurm bindings and paths accordingly.
+
+---
+
+## Testing Goals
+
+1. Allow sealevel users to configure and run the FACTS FAIR experiment on CPUs.
+2. Identify the most effective approach for running multiple experiments with different configurations, such as those defined in a benchmark configuration file.
 
 ---
 
 ## Quick Start
 
-### 1. Run Benchmarks
+### 1. Install the Repository
 
-Execute the benchmark suite with Slurm bindings:
-
-```bash
-/usr/local/other/singularity/4.0.3/bin/singularity exec \
-  -B /usr/bin/sbatch,/etc/slurm/slurm.conf,/etc/slurm/preempt.conf,/etc/slurm/sched.preempt.conf,/etc/slurm/logacct.conf,/etc/slurm/nodesparts.conf,/usr/lib64/slurm,/usr/lib64/slurm/libslurmfull.so,/usr/slurm/lib64/slurm,/usr/slurm/lib64/slurm/auth_munge.so,/usr/lib64/libmunge.so.2,/run/munge/munge.socket.2,/usr/bin/squeue,/usr/bin/sacct \
-  /discover/nobackup/projects/sealevel/facts2.0/containers/sealevel-facts-total_latest-sandbox \
-  python facts_benchmark.py --run --config fair_config_local.yaml
-```
-
-**Output:** Results directory with timestamp (e.g., `benchmark_20260713_175600`)
-
----
-
-### 2. Check Status
-
-Monitor job progress:
+Clone the repository from a node on Discover:
 
 ```bash
-python facts_benchmark.py --status \
-  --results-dir /discover/nobackup/projects/eis_freshwater/gtamkin/facts2.0/notebooks/benchmark_20260713_175600
-```
-
-**Output:**
-```
-Name                           Job ID       State        Time         MaxRSS       Done
-------------------------------------------------------------------------------------------
-samps_10                       discover     UNKNOWN                                ✓
+mkdir test
+cd test/
+git clone https://github.com/nasa-nccs-hpda/sealevel.git
+cd sealevel/notebooks/
 ```
 
 ---
 
-### 3. Analyze Results
+### 2. Run a Benchmark
 
-Generate comprehensive reports:
+Run the benchmark suite with the Singularity and Slurm bindings shown below:
 
 ```bash
-python facts_benchmark.py --analyze \
-  --results-dir /discover/nobackup/projects/eis_freshwater/gtamkin/facts2.0/notebooks/benchmark_20260713_175600
+time /usr/local/other/singularity/4.0.3/bin/singularity exec \
+  -B /usr/bin/sbatch,/etc/slurm/slurm.conf,/etc/slurm/preempt.conf,/etc/slurm/sched.preempt.conf,/etc/slurm/logacct.conf,/etc/slurm/nodesparts.conf,/usr/lib64/slurm,/usr/lib64/slurm/libslurmfull.so,/usr/slurm/lib64/slurm,/usr/slurm/lib64/slurm/auth_munge.so,/usr/lib64/libmunge.so.2,/run/munge/munge.socket.2,/usr/bin/squeue,/usr/bin/sacct,/home/gtamkin/test/sealevel/notebooks \
+  /discover/nobackup/projects/sealevel/facts2.0/containers/sealevel-facts-total_latest.sif \
+  python /home/gtamkin/test/sealevel/notebooks/facts_benchmark.py \
+  --run --config /home/gtamkin/test/sealevel/notebooks/fair_config.yaml
 ```
 
-**Generated Files:**
-- `benchmark_report.txt` — Text summary
-- `benchmark_report.md` — Markdown report
-- `analysis.json` — Raw JSON data
+This submits the benchmark job and creates a results directory such as:
 
----
-
-## Sample Output
-
-### Benchmark Report
-
+```text
+/home/gtamkin/test/sealevel/notebooks/benchmark_20260715_120307
 ```
-================================================================================
-FACTS WORKFLOW BENCHMARK REPORT
-================================================================================
 
-Generated: 2026-07-13 17:57:53
-Results Directory: /discover/nobackup/projects/eis_freshwater/gtamkin/facts2.0/notebooks/benchmark_20260713_175600
+Example output will include a summary similar to the following:
 
-EXECUTIVE SUMMARY
-------------------------------------------------------------
-  Total benchmark runs:     1
-  Successful:               1
-  Failed:                   0
-  Success rate:             100.0%
-  Fastest run:              23s
-  Slowest run:              23s
-  Average time:             23s
-  Median time:              23s
-  Std deviation:            0s
-  Total compute time:       23s
-
-KEY RECOMMENDATIONS
-------------------------------------------------------------
-  [HIGH] Fastest configuration: samps_10 (23s)
-
-RESULTS BY PARTITION
-------------------------------------------------------------
-  compute           1 runs  avg: 23s        range: 23s-23s
-
-RESULTS BY TAG
-------------------------------------------------------------
-  samples           1 runs  avg: 23s
-
-DETAILED RESULTS
-------------------------------------------------------------
-  Name                         Part       CPUs   GPU      Samps  Time       OK
-  samps_10                     compute    16     none     10     23s        ✓
-
-================================================================================
+```text
+FACTS Benchmark Suite: Fair Module Sample
+Total configurations: 1
+[1/1] samps_10: Sample scaling: 10 samples [samples]
+Job ID: 57148204
 ```
 
 ---
 
-## Configuration
+### 3. Check Job Status
 
-Edit `fair_config_local.yaml` to customize benchmarks:
+Monitor job progress with:
 
-### Global Settings
+```bash
+time /usr/local/other/singularity/4.0.3/bin/singularity exec \
+  -B /usr/bin/sbatch,/etc/slurm/slurm.conf,/etc/slurm/preempt.conf,/etc/slurm/sched.preempt.conf,/etc/slurm/logacct.conf,/etc/slurm/nodesparts.conf,/usr/lib64/slurm,/usr/lib64/slurm/libslurmfull.so,/usr/slurm/lib64/slurm,/usr/slurm/lib64/slurm/auth_munge.so,/usr/lib64/libmunge.so.2,/run/munge/munge.socket.2,/usr/bin/squeue,/usr/bin/sacct,/home/gtamkin/test/sealevel/notebooks \
+  /discover/nobackup/projects/sealevel/facts2.0/containers/sealevel-facts-total_latest.sif \
+  python /home/gtamkin/test/sealevel/notebooks/facts_benchmark.py \
+  --status --results-dir /home/gtamkin/test/sealevel/notebooks/benchmark_20260715_120307
+```
+
+This reports the current state of each benchmark job, including whether it is running, pending, completed, or failed.
+
+---
+
+### 4. Analyze the Results
+
+After jobs finish, generate a report with:
+
+```bash
+time /usr/local/other/singularity/4.0.3/bin/singularity exec \
+  -B /usr/bin/sbatch,/etc/slurm/slurm.conf,/etc/slurm/preempt.conf,/etc/slurm/sched.preempt.conf,/etc/slurm/logacct.conf,/etc/slurm/nodesparts.conf,/usr/lib64/slurm,/usr/lib64/slurm/libslurmfull.so,/usr/slurm/lib64/slurm,/usr/slurm/lib64/slurm/auth_munge.so,/usr/lib64/libmunge.so.2,/run/munge/munge.socket.2,/usr/bin/squeue,/usr/bin/sacct,/home/gtamkin/test/sealevel/notebooks \
+  /discover/nobackup/projects/sealevel/facts2.0/containers/sealevel-facts-total_latest.sif \
+  python /home/gtamkin/test/sealevel/notebooks/facts_benchmark.py \
+  --analyze --results-dir /home/gtamkin/test/sealevel/notebooks/benchmark_20260715_120307
+```
+
+The analysis step creates:
+
+- `benchmark_report.txt` — a plain-text summary
+- `benchmark_report.md` — a Markdown report
+- `analysis.json` — structured JSON results
+
+Example summary output includes:
+
+```text
+Total benchmark runs: 1
+Successful: 1
+Failed: 0
+Success rate: 100.0%
+Fastest run: 23s
+Slowest run: 23s
+Average time: 23s
+Median time: 23s
+```
+
+---
+
+### 5. Review the Output Files
+
+Inspect the run directory and generated results:
+
+```bash
+module load netcdf4
+
+ls -alt /home/gtamkin/test/sealevel/notebooks/benchmark_20260715_120307/samps_10_20260715_120307/
+```
+
+You should see output files such as:
+
+- `facts_results.json`
+- `facts.log`
+- `benchmark_result.json`
+- `job.slurm`
+- `facts_output/fair/`
+
+To confirm the sample count, inspect the NetCDF output:
+
+```bash
+ncdump -h /home/gtamkin/test/sealevel/notebooks/benchmark_20260715_120307/samps_10_20260715_120307/facts_output/fair/climate.nc | grep samples
+```
+
+The reported sample count should match the `nsamps_range` setting in `fair_config.yaml`.
+
+---
+
+## Configuration Notes
+
+Use the configuration file to define the benchmark sweep. A simple example is to set a sample range such as:
+
 ```yaml
-global:
-  account: "ilab"
-  scenario: "ssp585"
-  phases: ["modules"]
-  facts_script: "./run_facts.py"
-  input_dir: "/discover/nobackup/projects/sealevel/facts2.0/data/input"
-  container_dir: "/discover/nobackup/projects/sealevel/facts2.0/containers"
+nsamps_range: [10, 20, 50, 100, 2000, 8000]
 ```
 
-### Single Benchmarks
-```yaml
-benchmarks:
-  - name: "cpu_test"
-    partition: "compute"
-    cpus: 16
-    mem: "64G"
-    time: "02:00:00"
-    nsamps: 2000
-    tags: ["cpu", "baseline"]
-```
-
-### Auto-Generated Ranges
-
-#### CPU Scaling
-```yaml
-ranges:
-  cpu_scaling:
-    enabled: true
-    partition: "compute"
-    cpus: [4, 8, 16, 32, 64, 128, 256, 512, 1024]
-    mem: "64G"
-    nsamps: 2000
-    name_template: "cpu_{cpus}"
-```
-
-#### Sample Scaling
-```yaml
-  sample_scaling:
-    enabled: true
-    partition: "compute"
-    cpus: 16
-    nsamps_range: [10, 20, 50, 100, 2000, 8000]
-    time_map:
-      10: "01:00:00"
-      20: "02:00:00"
-      50: "05:00:00"
-      100: "10:00:00"
-      2000: "12:00:00"
-      8000: "12:00:00"
-```
+You can then compare runtime and output characteristics for each setting and record the most efficient configuration.
 
 ---
 
-## Output Structure
+## Recommended Workflow
 
-```
-benchmark_20260713_175600/
-├── benchmark_report.txt
-├── benchmark_report.md
-├── analysis.json
-└── samps_10_20260713_175600/
-    ├── facts_output/
-    │   └── fair/
-    │       ├── climate.nc
-    │       ├── gsat.nc
-    │       ├── oceantemp.nc
-    │       └── ohc.nc
-    └── job.slurm
-```
-
----
-
-## Slurm Bindings Required
-
-The container execution requires these bindings for Slurm integration:
-
-| Path | Purpose |
-|------|---------|
-| `/usr/bin/sbatch` | Job submission |
-| `/etc/slurm/slurm.conf` | Cluster configuration |
-| `/etc/slurm/*.conf` | Preempt, scheduling, node configs |
-| `/usr/lib64/slurm/` | Slurm libraries |
-| `/usr/slurm/lib64/` | Slurm plugin directory |
-| `/usr/lib64/libmunge.so.2` | Munge authentication |
-| `/run/munge/munge.socket.2` | Munge socket |
-| `/usr/bin/squeue` | Job status query |
-| `/usr/bin/sacct` | Job accounting |
-
-**Note:** Initial warnings about underlay bind mounts (>50 mounts) are normal and do not affect execution.
-
----
-
-## Key Metrics
-
-### Performance Summary
-- **Success Rate:** Percentage of successful runs
-- **Execution Time:** Wall-clock time per benchmark
-- **Compute Time:** Total CPU hours consumed
-- **Speedup:** Relative performance across configurations
-
-### By Partition
-- Grouped results for CPU vs. GPU nodes
-- Average execution time per partition
-- Resource utilization statistics
-
-### By Tag
-- Filter results by category (cpu, gpu, baseline, scaling, samples)
-- Identify optimal configurations by use case
-
----
-
-## Troubleshooting
-
-### Job Status Unknown
-- Wait for Slurm to update job status
-- Check `/etc/slurm/slurm.conf` is readable
-- Verify Munge socket is accessible
-
-### Missing Output Files
-- Confirm benchmark container path is correct
-- Verify input data directory exists
-- Check Singularity bindings are complete
-
-### Low Performance
-- Review CPU/GPU allocation in config
-- Compare against baseline benchmarks
-- Analyze scaling plots in report
-
----
-
-## Example Workflow
-
-1. **Configure** → Edit `fair_config_local.yaml`
-2. **Run** → Submit benchmarks with `--run`
-3. **Wait** → Monitor with `--status`
-4. **Analyze** → Generate reports with `--analyze`
-5. **Review** → Inspect `benchmark_report.md` and `analysis.json`
+1. Edit the benchmark configuration.
+2. Submit the job with `--run`.
+3. Monitor execution with `--status`.
+4. Generate a report with `--analyze`.
+5. Review the report and NetCDF outputs to compare performance.
 

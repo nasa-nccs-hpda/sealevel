@@ -9,8 +9,7 @@ global:
   account: "ilab"
   scenario: "ssp585"
   phases: ["fair"]
-  facts_script: "/discover/nobackup/projects/eis_freshwater/gtamkin/facts2.0/notebooks/run_facts.py"
-    #facts_script: "./run_facts.py"
+  facts_script: "./run_facts.py"
   input_dir: "/discover/nobackup/projects/sealevel/facts2.0/data/input"
   container_dir: "/discover/nobackup/projects/sealevel/facts2.0/containers"
 
