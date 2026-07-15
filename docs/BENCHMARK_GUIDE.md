@@ -10,7 +10,7 @@ The FACTS Benchmark Suite runs benchmark workflows for the FAIR module through S
 
 ## Testing Goals
 
-1. Allow sealevel users to configure and run the FACTS FAIR experiment on CPUs.
+1. Allow sealevel users to configure and run the FACTS FAIR experiment on CPUs with different sample sizes and times.
 2. Identify the most effective approach for running multiple experiments with different configurations, such as those defined in a benchmark configuration file.
 
 ---
