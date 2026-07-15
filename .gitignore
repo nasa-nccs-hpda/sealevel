@@ -139,3 +139,5 @@ notebooks/fair_facts_v2_viz_total_20260204.py
 # experiments
 /experiments
 /facts/experiments
+.vscode/extensions.json
+.vscode/launch.json

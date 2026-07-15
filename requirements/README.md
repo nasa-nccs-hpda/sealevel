@@ -1,5 +1,5 @@
 
-# ilab-template-python-data-science/requirements directory
+# See https://github.com/nasa-nccs-hpda/qefm-core/blob/main/requirements/Dockerfile.sealevel.facts.fair
 
 Template for python projects tailored to scientific applications (e.g., machine learning) - requirements directory
 
