@@ -116,4 +116,7 @@ Fork `fact-sealevel/facts-module-registry`, add `<module>/<module>_module.yaml`,
 - Apptainer image builds need an exec-capable temp dir. On this node `/tmp` is `noexec` and the shell's `APPTAINER_TMPDIR` pointed at a missing path;
   `/dev/shm` works. `notebooks/run_bam.py` sets `APPTAINER_TMPDIR`, `APPTAINER_CACHEDIR` and `PROOT_TMP_DIR` for you.
 - Whether sample *i* of a sea-level module pairs with sample *i* of the climate module is a property of the module's own sampling logic; check it
-  before claiming paired uncertainty.
+  before claiming paired uncertainty. For BAM it is only a weak, probabilistic link: the climate member sets the chance of drawing from Bamber's
+  high vs low scenario pool, and the ice-sheet realisation within the pool is an independent draw (Spearman about 0.05 between per-member temperature and
+  output). A module that ignores the climate file's members entirely, or uses only ensemble statistics, would show no pairing at all.
+  Quick test: shuffle the climate members in a copy of `climate.nc`, re-run the module with the same seed, and see which output samples change.

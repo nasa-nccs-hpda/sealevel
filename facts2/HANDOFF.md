@@ -36,7 +36,16 @@ Details, I/O table and timings: `notebooks/README.md` (section "FACTS2 BAM ...")
   `data/shared_input_data/psmsl_gauges.lst` (1,030 tide gauges = entries with id <= 10000 of `../facts/input_files/location.lst`; the other ~65,000
   entries are a 1-degree grid and were left out) via the experiment `bam_ssp585_fixed_gauges`. Local = global x a constant per ice sheet AND site
   (New York: EAIS 1.04, WAIS 1.22, GIS 0.44), identical for all samples. Station names are not unique (e.g. two SYDNEY), ids are.
-- Not checked: whether BAM sample i pairs with fair-temperature sample i (module sampling logic not read); do not claim paired trajectories.
+- **Sample pairing (checked 2026-10-18): weak and stochastic, NOT paired trajectories.** In the container's code
+  (`/opt/bamber19-icesheets/src/bamber19_icesheets/bamber19_icesheets_project.py`, `pickScenario`), climate member j only decides whether output
+  sample j is drawn from Bamber's HIGH or LOW pool: P(high) = clip((iSAT_j - 142.5)/100, 0, 1), iSAT = temperature (vs 1850-1900) summed over 2000-2099 in
+  degC*yr, via `rng.random() < P`. Which ice-sheet realisation is drawn from the pool (`sample_inds`) is an independent random draw. Under ssp585
+  300 of 500 members have P = 1 and the mean P is 0.91, so 91% of samples come from the high pool whatever the member (2150 GIS median 457 mm high pool vs
+  209 mm low pool). Tests: (1) replicating the selection from climate.nc predicted exactly which 68 of 500 samples change when the climate members are
+  shuffled and BAM is re-run with the same seed; all 68 changed and the other 432 stayed bit-identical (unshuffled control reproduces the real run, 0 mm);
+  (2) Spearman(iSAT_j, output_j) is +0.05 to +0.07 vs a shuffled-pairing null of 0.00 +/- 0.045, i.e. almost no per-sample link. Consequence: do not plot or
+  describe per-sample temperature vs ice-loss as paired trajectories; ensemble-level statements are fine. Also from the code (not tested here): with a
+  climate file BAM ignores `--nsamps` and uses the number of climate members.
 
 ## Findings / assumptions
 - "experiment-ssp585" = `../experiments/coupling.ssp585/config.yml` (legacy FACTS config). In it, bamber19 is in workflow `wf4`.
@@ -72,7 +81,8 @@ Details, I/O table and timings: `notebooks/README.md` (section "FACTS2 BAM ...")
 2. (done) Real location list: see "Done". Open question: a different or smaller site set (e.g. a curated few dozen coastal cities) if 1,030 is too many to show.
 3. (done 2026-10-18) `run_bam.py --regenerate --skip-run` was run on a throwaway experiment: setup + workflows injection + generate worked and the script was
    identical to the committed `bam_ssp585_fixed` one. The model run itself was not repeated through `--regenerate`.
-4. Optional: confirm FAIR/BAM sample pairing from the bamber19 module's sampling code.
+4. (done 2026-10-18) FAIR/BAM sample pairing checked: see "Sample pairing" above. Reproduce with `notebooks/check_bam_pairing.py` (replicates `pickScenario`, re-runs BAM with shuffled climate members, ~40 s; exit 0 = predictions held):
+   `cd facts2 && env -u PYTHONPATH PYTHONNOUSERSITE=1 uv run --isolated --python 3.12 --with h5py --with xarray --with netcdf4 --with 'numpy<2' python ../notebooks/check_bam_pairing.py`
 
 ## Commands
 export PATH=/panfs/ccds02/nobackup/people/gtamkin/uv-bin:$PATH

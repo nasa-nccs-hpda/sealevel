@@ -208,6 +208,11 @@ viz notebooks expect the lws / sterodynamics layout under `./data/output` and we
   maintainers is `facts2/REPORT_facts_total_double_count.md`. The generated scripts were deliberately not edited. `run_bam.py` checks the script's
   `facts-total` items before running and refuses a double-counting one (`--allow-double-count` to override), and it also checks the output totals afterwards.
 - Without a `workflows:` entry in `experiment-config.yaml`, `generate-apptainer` emits no facts-total stage at all.
+- **Sample pairing with the climate model is weak.** BAM uses climate member j only to set the probability (from its 2000-2099 integrated warming) of drawing
+  output sample j from Bamber's high rather than low scenario pool; the ice-sheet realisation itself is an independent random draw. Under ssp585 91% of
+  samples come from the high pool. Verified by shuffling the climate members (exactly the predicted 68 of 500 samples changed) and by a per-sample
+  correlation of only +0.05 to +0.07 (null 0.00 +/- 0.045). Treat the outputs as ensemble statistics, not temperature-to-ice-loss trajectories.
+  Reproduce with `check_bam_pairing.py` (docstring has the command; about 40 s; exit 0 if the code-based prediction holds).
 - Local (New York) results are the global results times a constant per ice sheet (EAIS 1.04, WAIS 1.22, GIS 0.44) for all 500 samples.
 - Image pulls need an exec-capable build dir. Here `APPTAINER_TMPDIR`/`APPTAINER_CACHEDIR` pointed at a nonexistent `/explore/.../containers/cache`,
   panfs failed in mksquashfs under proot, and `/tmp` and `/var/tmp` are `noexec`; `/dev/shm` works. The generated script is not edited; env is set per run.
