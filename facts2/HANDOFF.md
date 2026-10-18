@@ -12,8 +12,16 @@ Details, I/O table and timings: `notebooks/README.md` (section "FACTS2 BAM ...")
 - **facts-total double-counts Antarctica.** FEB passes all four bamber19 outputs (AIS, EAIS, WAIS, GIS) to facts-total; AIS already equals
   EAIS + WAIS, so the generated total = AIS+EAIS+WAIS+GIS exactly. Correct total = AIS + GIS. 2150 global median: 1312 mm generated vs 914 mm
   correct (+44%). Not fixable from the config (workflows select modules, not outputs); the generated script was deliberately not edited.
-  Suspected cause (unconfirmed): output tagging in the module registry. Should be raised with the FEB / registry maintainers.
-  `notebooks/run_bam.py` reports it as a warning; the notebook plots the correct total.
+  **Cause (confirmed):** `facts-module-registry/bamber19-icesheets/bamber19_icesheets_module.yaml` (registry `a085795`) sets no `pass_to_total`
+  on any output; FEB defaults it to `True` (`core/module/arg_specs.py`) and only skips outputs marked `false` (`application/execution_plan.py`).
+  `emulandice-ais` already does it right (AIS total `true`, EAIS/WAIS/PEN `false`). The registry's contributor guide never mentions `pass_to_total`.
+  **Fix (tested end to end, 2026-10-18):** add `pass_to_total: false` to `output-{EAIS,WAIS}-{gslr,lslr}-file` (4 lines). In a scratch workspace
+  with that change, the full pipeline (4:00, exit 0) passed only AIS+GIS to facts-total and the totals equal AIS+GIS exactly (max diff 0 mm;
+  2150 medians 914 mm global / 707 mm New York vs 1312 / 1181 generated). Bamber outputs were bit-identical to the earlier run (seeded).
+  The scratch test lived in the session scratchpad and is not kept; to redo it: patch a fresh `feb init` registry, run setup-experiment, add the
+  `workflows:` entry, generate-apptainer, check the `--item=` lines, run.
+  `notebooks/run_bam.py` reports the double-count as a warning; the notebook plots the correct total. The real workspace still has the unfixed totals.
+  Write-up for the maintainers: `facts2/REPORT_facts_total_double_count.md`.
 - **Apptainer build env on this node.** Shell has `APPTAINER_TMPDIR`/`APPTAINER_CACHEDIR` pointing at a nonexistent
   `/explore/nobackup/people/gtamkin/containers/cache`; panfs builds fail in mksquashfs under proot; `/tmp` and `/var/tmp` are `noexec`.
   `/dev/shm` works. `run_bam.py` sets the three env vars per run (APPTAINER_TMPDIR, APPTAINER_CACHEDIR, PROOT_TMP_DIR) in a per-run subdir
@@ -45,10 +53,12 @@ Details, I/O table and timings: `notebooks/README.md` (section "FACTS2 BAM ...")
 - Ran the experiment; verified outputs with xarray (500 samples, 14 years 2020-2150, no NaNs, AIS = EAIS + WAIS to 0.001 mm).
 - `notebooks/run_bam.py` (driver: config validation, preflight, timed run, output validation incl. facts-total check -> `bam_results.json`).
 - README section and `notebooks/4_bam_ssp585_viz.ipynb` (stored without outputs; run it before viewing).
+- Result figures in `facts2/figures/` (from the notebook); recipe for adding a module, with BAM annotated: `INTEGRATING_A_MODULE.md`.
 - Git: experiment config, generated script, `location.lst` and ignore rules are tracked; data, SIFs, outputs, logs, backups are ignored.
 
 ## Open items
-1. Raise the facts-total double-count with FEB / registry maintainers.
+1. Send the double-count report to the maintainers: issue on `fact-sealevel/facts-experiment-builder` plus a 4-line PR to
+   `fact-sealevel/facts-module-registry` (text in `REPORT_facts_total_double_count.md`). Not posted yet; posting is outward-facing, user decides.
 2. Use a real location list if local results matter (currently one site).
 3. `run_bam.py --regenerate` has not been run (setup + generate + workflows injection are untested).
 4. Optional: confirm FAIR/BAM sample pairing from the bamber19 module's sampling code.
