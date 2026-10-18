@@ -4,28 +4,41 @@ Goal: run FACTS2 with BAM (bamber19-icesheets) using FEB branch `add_apptainer_c
 emulating the reference `experiments/coupling.ssp585/config.yml` (the "experiment-ssp585" workflow).
 
 ## Status: working end to end
-Pipeline: ssp585 -> fair-temperature -> bamber19-icesheets -> facts-total, run with Apptainer. Latest full run via the driver:
-221.5 s wall, exit 0, 410 MB peak, 18/18 output checks OK (images cached). A cold run with image pulls takes ~7-9 min.
+Pipeline: ssp585 -> fair-temperature -> bamber19-icesheets -> facts-total, run with Apptainer. Experiments in `facts2/apptainer_experiments/`:
+- `bam_ssp585_fixed` (the default of `run_bam.py` and the notebook): one site (New York), registry fix applied, totals = AIS + GIS.
+- `bam_ssp585_fixed_gauges`: the same with 1,030 PSMSL tide gauges (`psmsl_gauges.lst`).
+- `bam_ssp585`: the ORIGINAL experiment. Its totals double-count Antarctica; it is kept on purpose as the "before" for the notebook and the report.
+  Do not use its totals.
+Full driver runs (images cached): 221-233 s wall, exit 0, ~410 MB peak, 19/19 output checks. A cold run with image pulls takes ~7-9 min.
 Details, I/O table and timings: `notebooks/README.md` (section "FACTS2 BAM ..."). Results: `notebooks/4_bam_ssp585_viz.ipynb`.
 
+**Clean-workspace smoke test (2026-10-18).** A fresh `feb init` workspace (pristine registry `a085795`, inputs and images symlinked from this one),
+driven only by `run_bam.py --workspace <fresh> --regenerate --experiment ...`, with no hand edits:
+- *Without the patch:* it injected the facts-total workflow, generated the script, warned that the registry lacks the fix, found AIS listed with EAIS/WAIS and
+  refused to run (exit 1, nothing executed, no run log).
+- *After `git -C facts-module-registry apply ../patches/bamber19_pass_to_total.patch`:* no warning, the script passes only AIS and GIS, and the full run
+  (233 s, exit 0, 19/19 checks) gave totals equal to AIS + GIS; its 10 output files are identical to `bam_ssp585_fixed` (max diff 0 mm).
+Note the README's copy-paste commands still show the `workflows:` entry as a manual step; only `run_bam.py --regenerate` automates it.
+
 ## Known problems (read before trusting the totals)
-- **facts-total double-counts Antarctica.** FEB passes all four bamber19 outputs (AIS, EAIS, WAIS, GIS) to facts-total; AIS already equals
-  EAIS + WAIS, so the generated total = AIS+EAIS+WAIS+GIS exactly. Correct total = AIS + GIS. 2150 global median: 1312 mm generated vs 914 mm
-  correct (+44%). Not fixable from the config (workflows select modules, not outputs); the generated script was deliberately not edited.
+- **facts-total double-counts Antarctica: fixed in our experiments by a local registry patch, NOT fixed upstream.**
+  *Current state:* `bam_ssp585_fixed` and `bam_ssp585_fixed_gauges` give correct totals (AIS + GIS) because the registry change is applied. The change is
+  tracked as `facts2/patches/bamber19_pass_to_total.patch` (4 lines, applies cleanly to registry `a085795`). The workspace's registry clone
+  (`facts2/facts-module-registry`, git-ignored) has it applied; a fresh `feb init` does NOT, so run
+  `git -C facts-module-registry apply ../patches/bamber19_pass_to_total.patch` first (the README commands do). `run_bam.py --regenerate` warns if it is missing,
+  and before any run `run_bam.py` checks the generated script's facts-total `--item` lines and refuses if AIS is listed with EAIS/WAIS
+  (`--allow-double-count` overrides; `--skip-run` only warns); after a run it checks the output totals. The upstream registry still lacks the fix:
+  the write-up for the maintainers is `facts2/REPORT_facts_total_double_count.md` (not posted; posting is outward-facing, user decides).
+  *Background, kept for the record:* FEB passes all four bamber19 outputs (AIS, EAIS, WAIS, GIS) to facts-total; AIS already equals EAIS + WAIS, so the
+  original experiment's total is AIS+EAIS+WAIS+GIS exactly. Correct total = AIS + GIS. 2150 global median: 1312 mm generated vs 914 mm correct (+44%).
+  The experiment config cannot fix this (its workflows select modules, not outputs); the fix belongs in the registry entry, and the generated scripts
+  were deliberately not edited.
   **Cause (confirmed):** `facts-module-registry/bamber19-icesheets/bamber19_icesheets_module.yaml` (registry `a085795`) sets no `pass_to_total`
   on any output; FEB defaults it to `True` (`core/module/arg_specs.py`) and only skips outputs marked `false` (`application/execution_plan.py`).
   `emulandice-ais` already does it right (AIS total `true`, EAIS/WAIS/PEN `false`). The registry's contributor guide never mentions `pass_to_total`.
-  **Fix (tested end to end, 2026-10-18):** add `pass_to_total: false` to `output-{EAIS,WAIS}-{gslr,lslr}-file` (4 lines). In a scratch workspace
-  with that change, the full pipeline (4:00, exit 0) passed only AIS+GIS to facts-total and the totals equal AIS+GIS exactly (max diff 0 mm;
-  2150 medians 914 mm global / 707 mm New York vs 1312 / 1181 generated). Bamber outputs were bit-identical to the earlier run (seeded).
-  **Provenance of the fix:** the registry change is tracked as `facts2/patches/bamber19_pass_to_total.patch` (applies cleanly to registry `a085795`).
-  The workspace's registry clone (`facts2/facts-module-registry`, git-ignored) has it applied, which is where `bam_ssp585_fixed` and
-  `bam_ssp585_fixed_gauges` were generated; their configs embed it (`pass_to_total: False`). A fresh `feb init` does NOT have it: run
-  `git -C facts-module-registry apply ../patches/bamber19_pass_to_total.patch` first (README commands do this). `run_bam.py --regenerate` warns if it is missing.
-  `bam_ssp585` (the original) keeps the double-counted totals on purpose, as the "before" for the notebook and the report; `run_bam.py` and the notebook
-  now default to `bam_ssp585_fixed`. `run_bam.py` checks the generated script's facts-total `--item` lines before running and refuses if AIS is listed with EAIS/WAIS
-  (`--allow-double-count` overrides; `--skip-run` only warns), and checks the output totals afterwards.
-  Write-up for the maintainers: `facts2/REPORT_facts_total_double_count.md`.
+  **Fix (tested end to end):** `pass_to_total: false` on `output-{EAIS,WAIS}-{gslr,lslr}-file`. With it the full pipeline (4:00, exit 0) passed only
+  AIS+GIS to facts-total and the totals equal AIS+GIS exactly (max diff 0 mm; 2150 medians 914 mm global / 707 mm New York vs 1312 / 1181 for the
+  original). Bamber outputs were bit-identical to the earlier run (seeded).
 - **Apptainer build env on this node.** Shell has `APPTAINER_TMPDIR`/`APPTAINER_CACHEDIR` pointing at a nonexistent
   `/explore/nobackup/people/gtamkin/containers/cache`; panfs builds fail in mksquashfs under proot; `/tmp` and `/var/tmp` are `noexec`.
   `/dev/shm` works. `run_bam.py` sets the three env vars per run (APPTAINER_TMPDIR, APPTAINER_CACHEDIR, PROOT_TMP_DIR) in a per-run subdir
@@ -69,7 +82,7 @@ Details, I/O table and timings: `notebooks/README.md` (section "FACTS2 BAM ...")
 - `notebooks/run_bam.py` (driver: config validation, preflight, timed run, output validation incl. facts-total check -> `bam_results.json`).
 - README section and `notebooks/4_bam_ssp585_viz.ipynb` (stored without outputs; run it before viewing).
 - Result figures in `facts2/figures/` (from the notebook); recipe for adding a module, with BAM annotated: `INTEGRATING_A_MODULE.md`.
-- Real location list (2026-10-18): `psmsl_gauges.lst` + experiment `bam_ssp585_fixed_gauges` (fixed registry, 1,030 sites). Run 227.5 s, exit 0, 18/18 checks.
+- Real location list (2026-10-18): `psmsl_gauges.lst` + experiment `bam_ssp585_fixed_gauges` (fixed registry, 1,030 sites). Run 227.5 s, exit 0, all output checks OK.
   Verified: global outputs and the New York site identical to the one-site run (0 mm), local total = AIS + GIS at all sites. `run_bam.py` now
   reports final-year medians correctly for many sites; the notebook has a site selector and a factor map (`facts2/figures/4b_site_factor_map.png`).
   (The `bam_results.json` inside `bam_ssp585_fixed_gauges/` was written by the older driver; its pooled local medians are not meaningful.)
@@ -79,8 +92,7 @@ Details, I/O table and timings: `notebooks/README.md` (section "FACTS2 BAM ...")
 1. Send the double-count report to the maintainers: issue on `fact-sealevel/facts-experiment-builder` plus a 4-line PR to
    `fact-sealevel/facts-module-registry` (text in `REPORT_facts_total_double_count.md`). Not posted yet; posting is outward-facing, user decides.
 2. (done) Real location list: see "Done". Open question: a different or smaller site set (e.g. a curated few dozen coastal cities) if 1,030 is too many to show.
-3. (done 2026-10-18) `run_bam.py --regenerate --skip-run` was run on a throwaway experiment: setup + workflows injection + generate worked and the script was
-   identical to the committed `bam_ssp585_fixed` one. The model run itself was not repeated through `--regenerate`.
+3. (done 2026-10-18) `run_bam.py --regenerate` verified from a clean workspace, including the model run: see "Clean-workspace smoke test" under Status.
 4. (done 2026-10-18) FAIR/BAM sample pairing checked: see "Sample pairing" above. Reproduce with `notebooks/check_bam_pairing.py` (replicates `pickScenario`, re-runs BAM with shuffled climate members, ~40 s; exit 0 = predictions held):
    `cd facts2 && env -u PYTHONPATH PYTHONNOUSERSITE=1 uv run --isolated --python 3.12 --with h5py --with xarray --with netcdf4 --with 'numpy<2' python ../notebooks/check_bam_pairing.py`
 
