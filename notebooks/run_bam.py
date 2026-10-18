@@ -63,7 +63,7 @@ def setup_logging(verbose: bool = False, log_file: Optional[str] = None):
 @dataclass
 class Config:
     workspace: str = "/panfs/ccds02/nobackup/projects/ilab/projects/sealevel/facts2"
-    experiment: str = "apptainer_experiments/bam_ssp585"
+    experiment: str = "apptainer_experiments/bam_ssp585_fixed"   # registry fix applied; bam_ssp585 double-counts Antarctica
     build_dir: str = "/dev/shm/apptainer_build"  # must be exec-capable local space; /tmp is noexec here
     nsamps: int = 500
     scenario: str = "ssp585"
@@ -126,11 +126,23 @@ def feb(cfg: Config, args: List[str], log) -> int:
     return subprocess.run(cmd, cwd=cfg.workspace).returncode
 
 
+def registry_has_fix(cfg: Config) -> bool:
+    """True if the workspace's registry clone marks bamber19 outputs pass_to_total: false (see facts2/patches/)."""
+    path = os.path.join(cfg.workspace, "facts-module-registry/bamber19-icesheets/bamber19_icesheets_module.yaml")
+    try:
+        return "pass_to_total: false" in open(path).read()
+    except OSError:
+        return False
+
+
 def regenerate(cfg: Config, log) -> bool:
     """feb setup-experiment refuses to overwrite an existing config; remove the experiment dir first if redoing."""
     if os.path.exists(cfg.config_yaml):
         log.error(f"{cfg.config_yaml} exists; move it aside before --regenerate")
         return False
+    if not registry_has_fix(cfg):
+        log.warning("registry clone lacks the bamber19 pass_to_total fix: facts-total will double-count Antarctica. "
+                    "Apply it first: git -C facts-module-registry apply ../patches/bamber19_pass_to_total.patch")
     # --extremesealevel-step NONE fails on this FEB branch, so the flag is omitted
     rc = feb(cfg, ["setup-experiment", "--experiment-name", cfg.experiment,
                    "--climate-step", "fair-temperature", "--sealevel-step", "bamber19-icesheets",
@@ -328,6 +340,8 @@ def validate_outputs(cfg: Config, log) -> Dict:
     for w in warnings:
         log.warning(w)
     report["warnings"] = warnings
+    report["p50_last_definition"] = ("final-year median over samples; with several sites, the median across sites of those "
+                                     "per-site medians (not a pooled median over all samples and sites)")
     log.info(f"output validation: {'OK' if ok else 'FAILED'} ({len(report)} checks)")
     report["ok"] = ok
     return report

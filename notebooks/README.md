@@ -122,26 +122,30 @@ cd /panfs/ccds02/nobackup/projects/ilab/projects/sealevel/facts2
 # One-time setup (already done in this workspace; setup-experiment refuses to overwrite an existing config)
 FEB="uvx --from git+https://github.com/fact-sealevel/facts-experiment-builder@add_apptainer_command feb"
 $FEB init
-$FEB setup-experiment --experiment-name apptainer_experiments/bam_ssp585 --climate-step fair-temperature \
+# REQUIRED until the registry is fixed upstream: without it facts-total double-counts Antarctica (see Assumptions below)
+git -C facts-module-registry apply ../patches/bamber19_pass_to_total.patch
+$FEB setup-experiment --experiment-name apptainer_experiments/bam_ssp585_fixed --climate-step fair-temperature \
     --sealevel-step bamber19-icesheets --pipeline-id bam001 --scenario ssp585 --baseyear 2005 \
     --pyear-start 2020 --pyear-end 2150 --pyear-step 10 --nsamps 500 --location-file location.lst
 # setup-experiment leaves the facts-total workflow empty when run non-interactively, so add it to the config
 # (under the "Workflows (facts-total)" heading of experiment-config.yaml) BEFORE generating the script:
 #   workflows:
 #     all-modules: "bamber19-icesheets"
-$FEB generate-apptainer --experiment-name apptainer_experiments/bam_ssp585
+$FEB generate-apptainer --experiment-name apptainer_experiments/bam_ssp585_fixed
+# (or do all of the above in one step: run_bam.py --regenerate --experiment apptainer_experiments/<new-name>)
 
-# Run + validate (driver sets the build env, times the run, checks the netCDF outputs -> facts2/bam_results.json)
+# Run + validate (driver sets the build env, times the run, checks the netCDF outputs -> <experiment>/bam_results.json).
+# Defaults to apptainer_experiments/bam_ssp585_fixed. The original, double-counting experiment is bam_ssp585 (kept as the "before").
 uv run --with xarray --with netcdf4 --with 'numpy<2' --with pyyaml python ../notebooks/run_bam.py -v
 
 # Or run the generated script directly (export the three env vars below first)
 D=/dev/shm/apptainer_build; mkdir -p $D/proot $D/cache
 APPTAINER_TMPDIR=$D APPTAINER_CACHEDIR=$D/cache PROOT_TMP_DIR=$D/proot \
-  /usr/bin/time -v bash apptainer_experiments/bam_ssp585/experiment-apptainer.sh 2>&1 | tee run.log
+  /usr/bin/time -v bash apptainer_experiments/bam_ssp585_fixed/experiment-apptainer.sh 2>&1 | tee run.log
 ```
 
 ### Inputs / outputs
-| Stage | Module (image) | Inputs (under `facts2/data/`) | Outputs (under `apptainer_experiments/bam_ssp585/output-apptainer/`) |
+| Stage | Module (image) | Inputs (under `facts2/data/`) | Outputs (under `apptainer_experiments/<experiment>/output-apptainer/`) |
 |---|---|---|---|
 | 1 | fair-temperature (`ghcr.io/fact-sealevel/fair-temperature:0.2.1`) | `module_specific_input_data/fair-temperature/{rcmip,parameters}` | `fair-temperature/{climate,gsat,oceantemp,ohc}.nc` |
 | 2 | bamber19-icesheets (`ghcr.io/fact-sealevel/bamber19-icesheets:0.2.0`) | `fair-temperature/climate.nc`, `module_specific_input_data/bamber19-icesheets/SLRProjections190726core_SEJ_full.mat`, `shared_input_data/{FPRINT,location.lst}` | `bamber19-icesheets/{AIS,EAIS,WAIS,GIS}-{gslr,lslr}.nc` |
@@ -169,6 +173,8 @@ ids up to 10000, tab-separated `name id lat lon`, latitudes -65 to 81. The other
 (`grid_<lat>_<lon>`) and were left out. `location.lst` (New York only) is unchanged, so the earlier experiments still reproduce.
 The experiment `apptainer_experiments/bam_ssp585_fixed_gauges` is `bam_ssp585_fixed` with `--location-file psmsl_gauges.lst`; its script differs
 only in that one flag. Run it with `run_bam.py --experiment apptainer_experiments/bam_ssp585_fixed_gauges` (3m48s; BAM takes 17 s instead of 7 s).
+Note on summary numbers: with many sites the driver's `p50_last_*` values (in `bam_results.json`, defined in its `p50_last_definition` entry) and the
+medians in its warnings are the median across sites of the per-site final-year medians, not a pooled median over all samples and sites.
 Local outputs then have `locations = 1030` (the `locations` coordinate holds the station ids, in list order; `lat`/`lon` per site); global outputs
 still have one location. Checks against the one-site run: global outputs and the New York site (id 12) are identical (max diff 0 mm), and the local
 total equals AIS + GIS at every site (max diff 0 mm). The local / global factor is still constant per site, but varies strongly by site, for example
@@ -195,7 +201,8 @@ viz notebooks expect the lws / sterodynamics layout under `./data/output` and we
   **Cause (confirmed):** the registry entry for bamber19-icesheets (registry `a085795`) sets no `pass_to_total` on any output, so FEB's default `true`
   sends all of them to the total. **Fix:** `pass_to_total: false` on the four EAIS/WAIS outputs, as `emulandice-ais` does. The experiment
   `bam_ssp585_fixed` was regenerated against a locally patched registry clone and its totals equal AIS + GIS (914 / 707 mm); its config and script are
-  committed. Run it with `run_bam.py --experiment apptainer_experiments/bam_ssp585_fixed`. The upstream registry is not fixed yet; the report for the
+  committed. The patch itself is tracked as `facts2/patches/bamber19_pass_to_total.patch` (4 lines; applies cleanly to registry `a085795`): apply it to any fresh
+  registry clone, or `run_bam.py --regenerate` will warn that the registry lacks the fix. Run it with `run_bam.py --experiment apptainer_experiments/bam_ssp585_fixed`. The upstream registry is not fixed yet; the report for the
   maintainers is `facts2/REPORT_facts_total_double_count.md`. The generated scripts were deliberately not edited, and `run_bam.py` warns when a total
   double-counts.
 - Without a `workflows:` entry in `experiment-config.yaml`, `generate-apptainer` emits no facts-total stage at all.

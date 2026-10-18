@@ -1,0 +1,36 @@
+diff --git a/bamber19-icesheets/bamber19_icesheets_module.yaml b/bamber19-icesheets/bamber19_icesheets_module.yaml
+index 796cb18..b94dcbc 100644
+--- a/bamber19-icesheets/bamber19_icesheets_module.yaml
++++ b/bamber19-icesheets/bamber19_icesheets_module.yaml
+@@ -114,6 +114,7 @@ arguments:
+         source: "module_inputs.outputs.output-EAIS-gslr-file"
+         filename: "EAIS-gslr.nc"
+         output_type: "global"
++        pass_to_total: false
+         mount:
+           volume: "output"
+           container_path: "/mnt/out"
+@@ -123,6 +124,7 @@ arguments:
+         source: "module_inputs.outputs.output-WAIS-gslr-file"
+         filename: "WAIS-gslr.nc"
+         output_type: "global"
++        pass_to_total: false
+         mount:
+           volume: "output"
+           container_path: "/mnt/out"
+@@ -150,6 +152,7 @@ arguments:
+         source: "module_inputs.outputs.output-EAIS-lslr-file"
+         filename: "EAIS-lslr.nc"
+         output_type: "local"
++        pass_to_total: false
+         mount:
+           volume: "output"
+           container_path: "/mnt/out"
+@@ -159,6 +162,7 @@ arguments:
+         source: "module_inputs.outputs.output-WAIS-lslr-file"
+         filename: "WAIS-lslr.nc"
+         output_type: "local"
++        pass_to_total: false
+         mount:
+           volume: "output"
+           container_path: "/mnt/out"

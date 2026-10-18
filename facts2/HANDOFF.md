@@ -18,9 +18,12 @@ Details, I/O table and timings: `notebooks/README.md` (section "FACTS2 BAM ...")
   **Fix (tested end to end, 2026-10-18):** add `pass_to_total: false` to `output-{EAIS,WAIS}-{gslr,lslr}-file` (4 lines). In a scratch workspace
   with that change, the full pipeline (4:00, exit 0) passed only AIS+GIS to facts-total and the totals equal AIS+GIS exactly (max diff 0 mm;
   2150 medians 914 mm global / 707 mm New York vs 1312 / 1181 generated). Bamber outputs were bit-identical to the earlier run (seeded).
-  The scratch test lived in the session scratchpad and is not kept; to redo it: patch a fresh `feb init` registry, run setup-experiment, add the
-  `workflows:` entry, generate-apptainer, check the `--item=` lines, run.
-  `notebooks/run_bam.py` reports the double-count as a warning; the notebook plots the correct total. The real workspace still has the unfixed totals.
+  **Provenance of the fix:** the registry change is tracked as `facts2/patches/bamber19_pass_to_total.patch` (applies cleanly to registry `a085795`).
+  The workspace's registry clone (`facts2/facts-module-registry`, git-ignored) has it applied, which is where `bam_ssp585_fixed` and
+  `bam_ssp585_fixed_gauges` were generated; their configs embed it (`pass_to_total: False`). A fresh `feb init` does NOT have it: run
+  `git -C facts-module-registry apply ../patches/bamber19_pass_to_total.patch` first (README commands do this). `run_bam.py --regenerate` warns if it is missing.
+  `bam_ssp585` (the original) keeps the double-counted totals on purpose, as the "before" for the notebook and the report; `run_bam.py` and the notebook
+  now default to `bam_ssp585_fixed`. `run_bam.py` warns when a total double-counts.
   Write-up for the maintainers: `facts2/REPORT_facts_total_double_count.md`.
 - **Apptainer build env on this node.** Shell has `APPTAINER_TMPDIR`/`APPTAINER_CACHEDIR` pointing at a nonexistent
   `/explore/nobackup/people/gtamkin/containers/cache`; panfs builds fail in mksquashfs under proot; `/tmp` and `/var/tmp` are `noexec`.
@@ -66,7 +69,8 @@ Details, I/O table and timings: `notebooks/README.md` (section "FACTS2 BAM ...")
 1. Send the double-count report to the maintainers: issue on `fact-sealevel/facts-experiment-builder` plus a 4-line PR to
    `fact-sealevel/facts-module-registry` (text in `REPORT_facts_total_double_count.md`). Not posted yet; posting is outward-facing, user decides.
 2. (done) Real location list: see "Done". Open question: a different or smaller site set (e.g. a curated few dozen coastal cities) if 1,030 is too many to show.
-3. `run_bam.py --regenerate` has not been run (setup + generate + workflows injection are untested).
+3. (done 2026-10-18) `run_bam.py --regenerate --skip-run` was run on a throwaway experiment: setup + workflows injection + generate worked and the script was
+   identical to the committed `bam_ssp585_fixed` one. The model run itself was not repeated through `--regenerate`.
 4. Optional: confirm FAIR/BAM sample pairing from the bamber19 module's sampling code.
 
 ## Commands
