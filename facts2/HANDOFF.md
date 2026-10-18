@@ -23,7 +23,8 @@ Details, I/O table and timings: `notebooks/README.md` (section "FACTS2 BAM ...")
   `bam_ssp585_fixed_gauges` were generated; their configs embed it (`pass_to_total: False`). A fresh `feb init` does NOT have it: run
   `git -C facts-module-registry apply ../patches/bamber19_pass_to_total.patch` first (README commands do this). `run_bam.py --regenerate` warns if it is missing.
   `bam_ssp585` (the original) keeps the double-counted totals on purpose, as the "before" for the notebook and the report; `run_bam.py` and the notebook
-  now default to `bam_ssp585_fixed`. `run_bam.py` warns when a total double-counts.
+  now default to `bam_ssp585_fixed`. `run_bam.py` checks the generated script's facts-total `--item` lines before running and refuses if AIS is listed with EAIS/WAIS
+  (`--allow-double-count` overrides; `--skip-run` only warns), and checks the output totals afterwards.
   Write-up for the maintainers: `facts2/REPORT_facts_total_double_count.md`.
 - **Apptainer build env on this node.** Shell has `APPTAINER_TMPDIR`/`APPTAINER_CACHEDIR` pointing at a nonexistent
   `/explore/nobackup/people/gtamkin/containers/cache`; panfs builds fail in mksquashfs under proot; `/tmp` and `/var/tmp` are `noexec`.

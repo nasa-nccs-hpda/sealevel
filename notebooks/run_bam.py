@@ -73,6 +73,7 @@ class Config:
     pyear_step: int = 10
     regenerate: bool = False
     skip_run: bool = False
+    allow_double_count: bool = False
     verbose: bool = False
     steps: List[str] = field(default_factory=list)
 
@@ -124,6 +125,32 @@ def feb(cfg: Config, args: List[str], log) -> int:
     cmd = ["uvx", "--from", FEB_REF, "feb"] + args
     log.info("FEB: " + shlex.join(cmd))
     return subprocess.run(cmd, cwd=cfg.workspace).returncode
+
+
+def check_total_items(cfg: Config, log) -> List[str]:
+    """Problems in the facts-total --item lists of the generated script (empty list = fine).
+
+    AIS (all of Antarctica) already equals EAIS + WAIS, so a total that lists AIS together with EAIS or WAIS
+    for the same module and result type counts Antarctica twice. Checked on the script, before anything runs.
+    """
+    try:
+        text = open(cfg.script).read()
+    except OSError:
+        return []                                  # preflight reports a missing script
+    groups: Dict[tuple, List[str]] = {}
+    for module, comp, kind in re.findall(r'--item=[^"\s]*/([^/"\s]+)/([A-Za-z0-9_]+)-(gslr|lslr)\.nc', text):
+        groups.setdefault((module, kind), []).append(comp)
+    if not groups:
+        log.warning("no facts-total --item lines in the generated script (no facts-total stage); total not checked")
+        return []
+    problems = []
+    for (module, kind), comps in sorted(groups.items()):
+        log.info(f"facts-total {kind} items from {module}: {', '.join(comps)}")
+        if "AIS" in comps and ({"EAIS", "WAIS"} & set(comps)):
+            problems.append(f"facts-total {kind} adds AIS together with {' and '.join(sorted({'EAIS', 'WAIS'} & set(comps)))} "
+                            f"({module}): Antarctica is counted twice. Apply facts2/patches/bamber19_pass_to_total.patch to the "
+                            f"registry and regenerate, or use bam_ssp585_fixed.")
+    return problems
 
 
 def registry_has_fix(cfg: Config) -> bool:
@@ -360,11 +387,14 @@ def main() -> int:
     p.add_argument("--nsamps", type=int, default=d.nsamps)
     p.add_argument("--regenerate", action="store_true", help="run feb setup-experiment + generate-apptainer first")
     p.add_argument("--skip-run", action="store_true", help="only validate config and existing outputs")
+    p.add_argument("--allow-double-count", action="store_true",
+                   help="run even if the script's facts-total would count Antarctica twice (e.g. to redo the original bam_ssp585)")
     p.add_argument("-v", "--verbose", action="store_true")
     a = p.parse_args()
 
     cfg = Config(workspace=a.workspace, experiment=a.experiment, build_dir=a.build_dir, nsamps=a.nsamps,
-                 regenerate=a.regenerate, skip_run=a.skip_run, verbose=a.verbose)
+                 regenerate=a.regenerate, skip_run=a.skip_run, allow_double_count=a.allow_double_count,
+                 verbose=a.verbose)
     log = setup_logging(cfg.verbose)
     summary: Dict = {}
     t0 = time.time()
@@ -372,6 +402,13 @@ def main() -> int:
     if cfg.regenerate and not regenerate(cfg, log):
         return 1
     if not validate_config(cfg, log):
+        return 1
+    problems = check_total_items(cfg, log)
+    blocking = bool(problems) and not (cfg.skip_run or cfg.allow_double_count)
+    for msg in problems:
+        (log.error if blocking else log.warning)(msg)
+    if blocking:
+        log.error("refusing to run (nothing was executed); pass --allow-double-count to run it anyway")
         return 1
     if not cfg.skip_run:
         if not preflight(cfg, log):

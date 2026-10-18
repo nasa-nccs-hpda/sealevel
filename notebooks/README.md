@@ -136,6 +136,8 @@ $FEB generate-apptainer --experiment-name apptainer_experiments/bam_ssp585_fixed
 
 # Run + validate (driver sets the build env, times the run, checks the netCDF outputs -> <experiment>/bam_results.json).
 # Defaults to apptainer_experiments/bam_ssp585_fixed. The original, double-counting experiment is bam_ssp585 (kept as the "before").
+# Before running, the driver checks the script's facts-total --item lines and refuses (exit 1, nothing executed) if AIS is added together with
+# EAIS/WAIS; --allow-double-count overrides it (e.g. to redo bam_ssp585), and --skip-run only warns.
 uv run --with xarray --with netcdf4 --with 'numpy<2' --with pyyaml python ../notebooks/run_bam.py -v
 
 # Or run the generated script directly (export the three env vars below first)
@@ -203,8 +205,8 @@ viz notebooks expect the lws / sterodynamics layout under `./data/output` and we
   `bam_ssp585_fixed` was regenerated against a locally patched registry clone and its totals equal AIS + GIS (914 / 707 mm); its config and script are
   committed. The patch itself is tracked as `facts2/patches/bamber19_pass_to_total.patch` (4 lines; applies cleanly to registry `a085795`): apply it to any fresh
   registry clone, or `run_bam.py --regenerate` will warn that the registry lacks the fix. Run it with `run_bam.py --experiment apptainer_experiments/bam_ssp585_fixed`. The upstream registry is not fixed yet; the report for the
-  maintainers is `facts2/REPORT_facts_total_double_count.md`. The generated scripts were deliberately not edited, and `run_bam.py` warns when a total
-  double-counts.
+  maintainers is `facts2/REPORT_facts_total_double_count.md`. The generated scripts were deliberately not edited. `run_bam.py` checks the script's
+  `facts-total` items before running and refuses a double-counting one (`--allow-double-count` to override), and it also checks the output totals afterwards.
 - Without a `workflows:` entry in `experiment-config.yaml`, `generate-apptainer` emits no facts-total stage at all.
 - Local (New York) results are the global results times a constant per ice sheet (EAIS 1.04, WAIS 1.22, GIS 0.44) for all 500 samples.
 - Image pulls need an exec-capable build dir. Here `APPTAINER_TMPDIR`/`APPTAINER_CACHEDIR` pointed at a nonexistent `/explore/.../containers/cache`,
