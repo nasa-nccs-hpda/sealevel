@@ -1,0 +1,14 @@
+facts-module-registry/
+
+# Downloaded inputs (re-fetchable with `feb`); keep only the small site list that defines the experiment
+data/*
+!data/shared_input_data/
+data/shared_input_data/*
+!data/shared_input_data/location.lst
+
+# Container images and run products: reproducible from experiment-config.yaml + experiment-apptainer.sh
+apptainer_experiments/sif/
+apptainer_experiments/*/output*/
+apptainer_experiments/*/*.pre-total
+bam_results.json
+*.log
