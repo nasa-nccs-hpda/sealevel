@@ -114,33 +114,52 @@ KeyError: [<class 'netCDF4._netCDF4.Dataset'>, ('/tmp/sealevel/notebooks/data/ou
 Emulates `experiments/coupling.ssp585` workflow `wf4` (bamber19) using the `fact-sealevel` containers and
 facts-experiment-builder (FEB) branch `add_apptainer_command`. Workspace: `facts2/`. No Docker; Apptainer 1.5.3.
 
-### Copy-paste commands
+### Setup from scratch (verified in an empty workspace with its own downloads and a cold image pull, 2026-10-18)
+Needs Apptainer, `uv`/`uvx`, and network access to `zenodo.org` and `ghcr.io`. About 340 MB of input data and about 700 MB of images (four SIF files) are fetched.
 ```bash
 export PATH=/panfs/ccds02/nobackup/people/gtamkin/uv-bin:$PATH     # uv
-cd /panfs/ccds02/nobackup/projects/ilab/projects/sealevel/facts2
-
-# One-time setup (already done in this workspace; setup-experiment refuses to overwrite an existing config)
+git clone <this repository> && cd sealevel/facts2                    # facts2/ is the workspace
 FEB="uvx --from git+https://github.com/fact-sealevel/facts-experiment-builder@add_apptainer_command feb"
-$FEB init
+$FEB init                                      # creates experiments/ and clones the module registry (pristine upstream)
 # REQUIRED until the registry is fixed upstream: without it facts-total double-counts Antarctica (see Assumptions below)
 git -C facts-module-registry apply ../patches/bamber19_pass_to_total.patch
-$FEB setup-experiment --experiment-name apptainer_experiments/bam_ssp585_fixed --climate-step fair-temperature \
-    --sealevel-step bamber19-icesheets --pipeline-id bam001 --scenario ssp585 --baseyear 2005 \
-    --pyear-start 2020 --pyear-end 2150 --pyear-step 10 --nsamps 500 --location-file location.lst
-# setup-experiment leaves the facts-total workflow empty when run non-interactively, so add it to the config
-# (under the "Workflows (facts-total)" heading of experiment-config.yaml) BEFORE generating the script:
-#   workflows:
-#     all-modules: "bamber19-icesheets"
-$FEB generate-apptainer --experiment-name apptainer_experiments/bam_ssp585_fixed
-# (or do all of the above in one step: run_bam.py --regenerate --experiment apptainer_experiments/<new-name>)
 
-# Run + validate (driver sets the build env, times the run, checks the netCDF outputs -> <experiment>/bam_results.json).
-# Defaults to apptainer_experiments/bam_ssp585_fixed. The original, double-counting experiment is bam_ssp585 (kept as the "before").
-# Before running, the driver checks the script's facts-total --item lines and refuses (exit 1, nothing executed) if AIS is added together with
-# EAIS/WAIS; --allow-double-count overrides it (e.g. to redo bam_ssp585), and --skip-run only warns.
+# Input data: the four Zenodo archives listed in the registry YAML headers, unpacked into the layout FEB expects.
+# (location.lst and psmsl_gauges.lst are already in the repo; tar prints harmless "unknown extended header" warnings.)
+Z=https://zenodo.org/record/7478192/files; D=$(mktemp -d); M=data/module_specific_input_data
+for f in bamber19_icesheets_preprocess_data fair_temperature_fit_data fair_temperature_preprocess_data grd_fingerprints_data; do
+  curl -L -o $D/$f.tgz $Z/$f.tgz; done
+mkdir -p $M/bamber19-icesheets $M/fair-temperature data/shared_input_data
+tar xzf $D/bamber19_icesheets_preprocess_data.tgz -C $M/bamber19-icesheets
+tar xzf $D/fair_temperature_fit_data.tgz          -C $M/fair-temperature
+tar xzf $D/fair_temperature_preprocess_data.tgz   -C $M/fair-temperature
+tar xzf $D/grd_fingerprints_data.tgz              -C data/shared_input_data
+$FEB check-data                                # expect: bamber19-icesheets 1/1, fair-temperature 2/2, all modules complete
+
+# Generate a NEW experiment, run it and validate it, in one step and with no hand edits (the driver adds the facts-total workflow,
+# creates apptainer_experiments/, sets the Apptainer build env, times the run and checks the outputs; the first run also pulls the images)
+uv run --with xarray --with netcdf4 --with 'numpy<2' --with pyyaml python ../notebooks/run_bam.py --regenerate \
+    --experiment apptainer_experiments/my_run -v
+```
+Result of this exact sequence in an empty workspace: input data byte-identical to the original workspace's, `check-data` complete, a generated script and config
+identical to `bam_ssp585_fixed`, a cold run of 10m23s (about 6m53s of it pulling images, 3m30s of models), exit 0, totals equal to AIS + GIS, 19/19 output checks,
+and all 11 compared output files bit-identical to the original run.
+
+**Do not run the committed experiments from another checkout.** The generated `experiment-apptainer.sh` files embed the absolute path of the workspace
+they were generated in (`WORKSPACE=...`), so a clone elsewhere would read and write the original location. `run_bam.py` now refuses (exit 1, nothing executed)
+when a script's workspace differs from the one it is run in; use `--regenerate --experiment <new name>` as above. The committed configs and scripts are the
+record of what was run, not portable run scripts.
+
+### Other ways to run
+```bash
+cd .../facts2        # the workspace in which the experiment was generated
+# Run + validate an existing experiment (defaults to apptainer_experiments/bam_ssp585_fixed; the original, double-counting experiment is bam_ssp585,
+# kept as the "before"). Results go to <experiment>/bam_results.json.
 uv run --with xarray --with netcdf4 --with 'numpy<2' --with pyyaml python ../notebooks/run_bam.py -v
+# Before running, the driver checks the script's facts-total --item lines and refuses (exit 1, nothing executed) if AIS is added together with
+# EAIS/WAIS; --allow-double-count overrides it (e.g. to redo bam_ssp585), and --skip-run only validates existing outputs and warns.
 
-# Or run the generated script directly (export the three env vars below first)
+# Or run the generated script directly (export the three env vars first; /tmp is noexec here, /dev/shm works)
 D=/dev/shm/apptainer_build; mkdir -p $D/proot $D/cache
 APPTAINER_TMPDIR=$D APPTAINER_CACHEDIR=$D/cache PROOT_TMP_DIR=$D/proot \
   /usr/bin/time -v bash apptainer_experiments/bam_ssp585_fixed/experiment-apptainer.sh 2>&1 | tee run.log
@@ -166,6 +185,7 @@ Example 2150 global medians (mm): AIS 403, EAIS 49, WAIS 344, GIS 420.
 | Full `run_bam.py` run with facts-total (images cached) | 3m42s | 3m30s | 7s | 410 MB | facts-total 4s (global and local run in parallel); 18/18 output checks OK |
 
 | `bam_ssp585_fixed_gauges`, 1,030 sites (images cached) | 3m48s | 3m25s | 17s | 412 MB | facts-total 3-5 s; 18/18 checks OK |
+| Clean workspace, own downloads, cold image pulls (4 pulls) | 10m23s | 3m19s | 7s | 445 MB | pulls 6m53s; facts-total 4 s; 19/19 checks OK |
 
 SIFs: fair-temperature 200 MB, bamber19-icesheets 165 MB (`apptainer_experiments/sif/`); facts-total is pulled under two names.
 

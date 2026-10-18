@@ -167,6 +167,7 @@ def regenerate(cfg: Config, log) -> bool:
     if os.path.exists(cfg.config_yaml):
         log.error(f"{cfg.config_yaml} exists; move it aside before --regenerate")
         return False
+    os.makedirs(os.path.dirname(cfg.exp_dir), exist_ok=True)   # feb setup-experiment never creates the parent directory
     if not registry_has_fix(cfg):
         log.warning("registry clone lacks the bamber19 pass_to_total fix: facts-total will double-count Antarctica. "
                     "Apply it first: git -C facts-module-registry apply ../patches/bamber19_pass_to_total.patch")
@@ -235,6 +236,13 @@ def preflight(cfg: Config, log) -> bool:
     if not os.path.isfile(cfg.script):
         log.error(f"missing {cfg.script}")
         ok = False
+    else:
+        # generated scripts embed absolute paths (WORKSPACE=...); one generated elsewhere would read and write THAT workspace
+        m = re.search(r'^WORKSPACE="([^"]+)"', open(cfg.script).read(), re.M)
+        if m and os.path.realpath(m.group(1)) != os.path.realpath(cfg.workspace):
+            log.error(f"{cfg.script} was generated for workspace {m.group(1)}, not {cfg.workspace}; running it would use "
+                      f"that workspace's data and outputs. Regenerate here (run_bam.py --regenerate --experiment <new name>).")
+            ok = False
     for sub in ("module_specific_input_data/bamber19-icesheets", "module_specific_input_data/fair-temperature",
                 "shared_input_data/FPRINT", "shared_input_data/location.lst"):
         p = os.path.join(cfg.workspace, "data", sub)

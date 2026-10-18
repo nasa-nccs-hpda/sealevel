@@ -18,7 +18,15 @@ driven only by `run_bam.py --workspace <fresh> --regenerate --experiment ...`, w
   refused to run (exit 1, nothing executed, no run log).
 - *After `git -C facts-module-registry apply ../patches/bamber19_pass_to_total.patch`:* no warning, the script passes only AIS and GIS, and the full run
   (233 s, exit 0, 19/19 checks) gave totals equal to AIS + GIS; its 10 output files are identical to `bam_ssp585_fixed` (max diff 0 mm).
-Note the README's copy-paste commands still show the `workflows:` entry as a manual step; only `run_bam.py --regenerate` automates it.
+**Clean-environment test (2026-10-18), nothing symlinked:** an empty workspace with its OWN downloads (the four Zenodo archives, record 7478192, about 340 MB:
+`bamber19_icesheets_preprocess_data` -> `module_specific_input_data/bamber19-icesheets/`, `fair_temperature_fit_data` and `fair_temperature_preprocess_data`
+-> `.../fair-temperature/`, `grd_fingerprints_data` -> `shared_input_data/`), `feb check-data` complete, patch applied, then `run_bam.py --regenerate`
+with cold image pulls: 622.8 s (pulls 6m53s, models 3m30s), exit 0, totals = AIS+GIS, 19/19 checks; generated script and config identical to
+`bam_ssp585_fixed`, 11 output files bit-identical. It also showed that `feb init` works inside a cloned `facts2/` (tracked marker and .gitignore do not conflict).
+**Two defects found by this test and fixed in `run_bam.py`:** (1) FEB's `setup-experiment` never creates the parent dir `apptainer_experiments/`, so
+`--regenerate` failed in an empty workspace (the driver now creates it; the earlier smoke test had missed this because symlinking the images created it);
+(2) the generated scripts embed the absolute workspace path, so running a committed script from another checkout would read/write the ORIGINAL workspace;
+preflight now refuses when a script's `WORKSPACE=` differs from the workspace in use. The README's setup section is the verified sequence.
 
 ## Known problems (read before trusting the totals)
 - **facts-total double-counts Antarctica: fixed in our experiments by a local registry patch, NOT fixed upstream.**
