@@ -16,6 +16,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
@@ -26,7 +27,16 @@ FEB_REF = "git+https://github.com/fact-sealevel/facts-experiment-builder@add_app
 EXPECTED = {
     "fair-temperature": ["climate.nc", "gsat.nc", "oceantemp.nc", "ohc.nc"],
     "bamber19-icesheets": [f"{r}-{k}.nc" for r in ("AIS", "EAIS", "WAIS", "GIS") for k in ("gslr", "lslr")],
+    "facts-total": ["all-modules_global_total.nc", "all-modules_local_total.nc"],
 }
+
+# Data variable expected in each netCDF file (climate.nc holds only a 'year' coordinate)
+VARIABLE = {
+    "gsat.nc": "surface_temperature",
+    "oceantemp.nc": "deep_ocean_temperature",
+    "ohc.nc": "ocean_heat_content",
+}
+SLR_VAR = "sea_level_change"  # bamber19-icesheets and facts-total, units mm
 
 
 # =============================================================================
@@ -132,6 +142,13 @@ def regenerate(cfg: Config, log) -> bool:
                    "--shared-input-data", os.path.join(cfg.workspace, "data/shared_input_data")], log)
     if rc != 0:
         return False
+    # setup-experiment leaves 'workflows' empty when run non-interactively, and generate-apptainer
+    # then emits no facts-total stage. Add the workflow to the config (the script itself is never edited).
+    text = open(cfg.config_yaml).read()
+    marker = "##----- Workflows (facts-total) -----##\n"
+    if "\nworkflows:" not in text and marker in text:
+        open(cfg.config_yaml, "w").write(text.replace(marker, marker + 'workflows:\n  all-modules: "bamber19-icesheets"\n'))
+        log.info("added workflows.all-modules to experiment-config.yaml")
     return feb(cfg, ["generate-apptainer", "--experiment-name", cfg.experiment], log) == 0
 
 
@@ -149,8 +166,11 @@ def _mount_opts(path: str) -> str:
     return opts
 
 
-def build_env(cfg: Config, log) -> Dict[str, str]:
-    """Env for the subprocess: build/cache/proot dirs on an exec-capable filesystem."""
+def build_env(cfg: Config, log):
+    """Env for the subprocess: build/cache/proot dirs on an exec-capable filesystem.
+
+    Returns (env, run_dir). run_dir is a fresh subdirectory created here; it is the only
+    thing the driver deletes afterward, so a user-supplied --build-dir is never wiped."""
     env = os.environ.copy()
     for var in ("APPTAINER_TMPDIR", "APPTAINER_CACHEDIR"):
         old = env.get(var)
@@ -158,12 +178,14 @@ def build_env(cfg: Config, log) -> Dict[str, str]:
             log.warning(f"{var}={old} does not exist (pull would fail); overriding")
     if "noexec" in _mount_opts(cfg.build_dir).split(","):
         log.warning(f"{cfg.build_dir} is on a noexec mount; apptainer build will fail")
-    os.makedirs(os.path.join(cfg.build_dir, "proot"), exist_ok=True)
-    os.makedirs(os.path.join(cfg.build_dir, "cache"), exist_ok=True)
-    env["APPTAINER_TMPDIR"] = cfg.build_dir
-    env["APPTAINER_CACHEDIR"] = os.path.join(cfg.build_dir, "cache")
-    env["PROOT_TMP_DIR"] = os.path.join(cfg.build_dir, "proot")
-    return env
+    os.makedirs(cfg.build_dir, exist_ok=True)
+    run_dir = tempfile.mkdtemp(prefix="run_bam_", dir=cfg.build_dir)
+    os.makedirs(os.path.join(run_dir, "proot"))
+    os.makedirs(os.path.join(run_dir, "cache"))
+    env["APPTAINER_TMPDIR"] = run_dir
+    env["APPTAINER_CACHEDIR"] = os.path.join(run_dir, "cache")
+    env["PROOT_TMP_DIR"] = os.path.join(run_dir, "proot")
+    return env, run_dir
 
 
 def preflight(cfg: Config, log) -> bool:
@@ -189,7 +211,7 @@ def preflight(cfg: Config, log) -> bool:
 # =============================================================================
 
 def run_script(cfg: Config, log) -> Dict:
-    env = build_env(cfg, log)
+    env, run_dir = build_env(cfg, log)
     log_path = os.path.join(cfg.workspace, "run.log")
     timing = ["/usr/bin/time", "-v"] if os.path.exists("/usr/bin/time") else []
     cmd = timing + ["bash", cfg.script]
@@ -199,7 +221,7 @@ def run_script(cfg: Config, log) -> Dict:
         rc = subprocess.run(cmd, cwd=cfg.workspace, env=env, stdout=fh, stderr=subprocess.STDOUT).returncode
     wall = time.time() - start
     text = open(log_path).read()
-    shutil.rmtree(cfg.build_dir, ignore_errors=True)  # build dir may live in RAM (/dev/shm)
+    shutil.rmtree(run_dir, ignore_errors=True)  # per-run dir only; may live in RAM (/dev/shm)
 
     # Stage timings from the script's own "[HH:MM:SS] ..." log lines
     stamps = re.findall(r"^\[(\d\d):(\d\d):(\d\d)\] (Running service|Completed): (\S+)", text, re.M)
@@ -227,39 +249,80 @@ def validate_outputs(cfg: Config, log) -> Dict:
     import xarray as xr
 
     years = list(range(cfg.pyear_start, cfg.pyear_end + 1, cfg.pyear_step))
-    report, ok = {}, True
+    report, ok, warnings = {}, True, []
+    bam = os.path.join(cfg.out_dir, "bamber19-icesheets")
+
+    def fail(msg):
+        nonlocal ok
+        log.error(msg)
+        ok = False
+
     for mod, files in EXPECTED.items():
         for fn in files:
             path = os.path.join(cfg.out_dir, mod, fn)
             if not os.path.isfile(path):
-                log.error(f"MISSING {mod}/{fn}")
-                ok = False
+                fail(f"MISSING {mod}/{fn}")
                 continue
             ds = xr.open_dataset(path)
             entry = {"dims": dict(ds.sizes)}
-            if mod == "bamber19-icesheets":  # projection files: samples x years x locations
-                v = ds["sea_level_change"]
+            if fn == "climate.nc":  # only a 'year' coordinate, no data variables
+                report[f"{mod}/{fn}"] = entry
+                continue
+            var = VARIABLE.get(fn, SLR_VAR)
+            if var not in ds:
+                fail(f"{mod}/{fn}: variable {var!r} missing (has {list(ds.data_vars)})")
+                continue
+            v = ds[var]
+            bad = int((~np.isfinite(v.values)).sum())
+            entry.update(variable=var, units=v.attrs.get("units"), nonfinite=bad)
+            if ds.sizes.get("samples") != cfg.nsamps or bad:
+                fail(f"{mod}/{fn}: samples={ds.sizes.get('samples')} nonfinite={bad}")
+            if var == SLR_VAR:  # projection files: samples x years x locations, mm
                 got = [int(y) for y in ds["years"].values]
-                bad = int(np.isnan(v.values).sum())
-                entry.update(units=v.attrs.get("units"), nan=bad,
-                             p50_last=float(np.percentile(v.isel(years=-1), 50)))
-                if ds.sizes["samples"] != cfg.nsamps or got != years or bad:
-                    log.error(f"{mod}/{fn}: samples={ds.sizes['samples']} years={got} nan={bad}")
-                    ok = False
-            elif fn != "climate.nc":  # climate.nc holds only a 'year' coord; others are samples x years
-                if ds.sizes.get("samples") != cfg.nsamps:
-                    log.error(f"{mod}/{fn}: samples={ds.sizes.get('samples')}")
-                    ok = False
+                entry["p50_last"] = float(np.percentile(v.isel(years=-1), 50))
+                if got != years:
+                    fail(f"{mod}/{fn}: years={got}, expected {years}")
+                if v.attrs.get("units") != "mm":
+                    fail(f"{mod}/{fn}: units={v.attrs.get('units')!r}, expected 'mm'")
             report[f"{mod}/{fn}"] = entry
             log.debug(f"{mod}/{fn}: {entry}")
-    # Consistency: AIS = EAIS + WAIS (global, final year)
-    g = lambda r: xr.open_dataset(os.path.join(cfg.out_dir, "bamber19-icesheets", f"{r}-gslr.nc"))["sea_level_change"].isel(years=-1).values
-    if all(os.path.isfile(os.path.join(cfg.out_dir, "bamber19-icesheets", f"{r}-gslr.nc")) for r in ("AIS", "EAIS", "WAIS")):
-        diff = float(np.abs(g("AIS") - g("EAIS") - g("WAIS")).max())
+
+    def series(path):
+        return xr.open_dataset(path)[SLR_VAR].values.squeeze()  # (samples, years)
+
+    # Consistency: AIS = EAIS + WAIS (all years, global)
+    comps = {r: os.path.join(bam, f"{r}-gslr.nc") for r in ("AIS", "EAIS", "WAIS", "GIS")}
+    if all(os.path.isfile(f) for f in comps.values()):
+        diff = float(np.abs(series(comps["AIS"]) - series(comps["EAIS"]) - series(comps["WAIS"])).max())
         report["AIS_minus_EAIS_WAIS_maxabs_mm"] = diff
         if diff > 0.01:
-            log.error(f"AIS != EAIS+WAIS (max diff {diff} mm)")
-            ok = False
+            fail(f"AIS != EAIS+WAIS (max diff {diff} mm)")
+
+    # facts-total sums every bamber19 output it is given. AIS already contains EAIS + WAIS,
+    # so the correct total is AIS + GIS; the sum of all four double-counts Antarctica.
+    for scale, kind in (("global", "gslr"), ("local", "lslr")):
+        tot = os.path.join(cfg.out_dir, "facts-total", f"all-modules_{scale}_total.nc")
+        parts = {r: os.path.join(bam, f"{r}-{kind}.nc") for r in ("AIS", "EAIS", "WAIS", "GIS")}
+        if not (os.path.isfile(tot) and all(os.path.isfile(f) for f in parts.values())):
+            continue
+        t = series(tot)
+        c = {r: series(f) for r, f in parts.items()}
+        correct, four = c["AIS"] + c["GIS"], sum(c.values())
+        d_correct, d_four = float(np.abs(t - correct).max()), float(np.abs(t - four).max())
+        report[f"total_{scale}"] = {"max_abs_diff_vs_AIS_plus_GIS_mm": d_correct,
+                                    "max_abs_diff_vs_all_four_mm": d_four,
+                                    "p50_last_total": float(np.median(t[:, -1])),
+                                    "p50_last_AIS_plus_GIS": float(np.median(correct[:, -1]))}
+        if d_correct < 0.01:
+            log.info(f"facts-total {scale}: equals AIS+GIS")
+        elif d_four < 0.01:
+            warnings.append(f"facts-total {scale} = AIS+EAIS+WAIS+GIS (double-counts Antarctica); "
+                            f"2150 median {np.median(t[:, -1]):.0f} mm vs {np.median(correct[:, -1]):.0f} mm for AIS+GIS")
+        else:
+            fail(f"facts-total {scale} matches neither AIS+GIS (diff {d_correct}) nor all four (diff {d_four})")
+    for w in warnings:
+        log.warning(w)
+    report["warnings"] = warnings
     log.info(f"output validation: {'OK' if ok else 'FAILED'} ({len(report)} checks)")
     report["ok"] = ok
     return report
@@ -301,6 +364,13 @@ def main() -> int:
     summary["total_s"] = round(time.time() - t0, 1)
 
     out = os.path.join(cfg.workspace, "bam_results.json")
+    if cfg.skip_run and "run" not in summary and os.path.isfile(out):  # keep timing from the last real run
+        try:
+            prev = json.load(open(out)).get("run")
+            if prev:
+                summary["run"] = prev
+        except (OSError, ValueError):
+            pass
     with open(out, "w") as f:
         json.dump(summary, f, indent=2)
     log.info(f"summary -> {out} (total {summary['total_s']}s)")

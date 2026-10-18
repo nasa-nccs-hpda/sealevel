@@ -125,6 +125,10 @@ $FEB init
 $FEB setup-experiment --experiment-name apptainer_experiments/bam_ssp585 --climate-step fair-temperature \
     --sealevel-step bamber19-icesheets --pipeline-id bam001 --scenario ssp585 --baseyear 2005 \
     --pyear-start 2020 --pyear-end 2150 --pyear-step 10 --nsamps 500 --location-file location.lst
+# setup-experiment leaves the facts-total workflow empty when run non-interactively, so add it to the config
+# (under the "Workflows (facts-total)" heading of experiment-config.yaml) BEFORE generating the script:
+#   workflows:
+#     all-modules: "bamber19-icesheets"
 $FEB generate-apptainer --experiment-name apptainer_experiments/bam_ssp585
 
 # Run + validate (driver sets the build env, times the run, checks the netCDF outputs -> facts2/bam_results.json)
@@ -141,6 +145,7 @@ APPTAINER_TMPDIR=$D APPTAINER_CACHEDIR=$D/cache PROOT_TMP_DIR=$D/proot \
 |---|---|---|---|
 | 1 | fair-temperature (`ghcr.io/fact-sealevel/fair-temperature:0.2.1`) | `module_specific_input_data/fair-temperature/{rcmip,parameters}` | `fair-temperature/{climate,gsat,oceantemp,ohc}.nc` |
 | 2 | bamber19-icesheets (`ghcr.io/fact-sealevel/bamber19-icesheets:0.2.0`) | `fair-temperature/climate.nc`, `module_specific_input_data/bamber19-icesheets/SLRProjections190726core_SEJ_full.mat`, `shared_input_data/{FPRINT,location.lst}` | `bamber19-icesheets/{AIS,EAIS,WAIS,GIS}-{gslr,lslr}.nc` |
+| 3 | facts-total (`ghcr.io/fact-sealevel/facts-total:0.2.1`), one global + one local job | all 8 `bamber19-icesheets/*.nc` files | `facts-total/all-modules_{global,local}_total.nc` (**double-counts Antarctica, see below**) |
 
 Parameters: ssp585, years 2020-2150 step 10 (14 steps), baseyear 2005, nsamps 500, pipeline-id bam001, seeds 2314 (fair) / 1423 (bamber).
 Output shape: `sea_level_change(samples=500, years=14, locations=1)` in mm; AIS = EAIS + WAIS (checked to 0.001 mm).
@@ -150,15 +155,30 @@ Example 2150 global medians (mm): AIS 403, EAIS 49, WAIS 344, GIS 420.
 | Run | Wall | fair-temperature | bamber19 | Peak RSS | Notes |
 |---|---|---|---|---|---|
 | First (cold) | 8m54s | 3m50s | 7s | 618 MB | includes pulling 2 images (~5 min) |
-| Rerun via `run_bam.py` (images cached) | 3m58s | 3m51s | 8s | 412 MB | 13/13 output checks OK |
+| Rerun via `run_bam.py` (images cached) | 3m58s | 3m51s | 8s | 412 MB | 13/13 output checks OK (before facts-total was added) |
+| With facts-total (first run, pulls its image) | 7m20s | 3m57s | 8s | 413 MB | the facts-total image is pulled twice (same image, two names), ~1.5 min each |
+| Full `run_bam.py` run with facts-total (images cached) | 3m42s | 3m30s | 7s | 410 MB | facts-total 4s (global and local run in parallel); 18/18 output checks OK |
 
-SIFs: fair-temperature 200 MB, bamber19-icesheets 165 MB (`apptainer_experiments/sif/`).
+SIFs: fair-temperature 200 MB, bamber19-icesheets 165 MB (`apptainer_experiments/sif/`); facts-total is pulled under two names.
+
+### Results notebook
+[`4_bam_ssp585_viz.ipynb`](4_bam_ssp585_viz.ipynb) reads the netCDF outputs (no containers needed, runs in seconds) and shows: the ssp585 warming
+fan, the three ice-sheet contributions through time, their 2150 distributions, the New York factor per ice sheet, the correct total (AIS + GIS) against the
+generated one, and a run card from `bam_results.json`. It needs `xarray`, `netcdf4`, `matplotlib` and `pandas`; set `FACTS2_WORKSPACE` if the workspace is not at
+`../facts2`, and `FIG_DIR` to also save the PNGs. It is stored without outputs, so run it before viewing. The older `fair_facts_v2_*` / `3_fair_facts_v2_*`
+viz notebooks expect the lws / sterodynamics layout under `./data/output` and were not reused.
 
 ### Assumptions / known issues
 - "experiment-ssp585" = `experiments/coupling.ssp585/config.yml`; FACTS2 = `fact-sealevel` org + FEB + per-module containers (not the legacy `facts/` dir).
 - FEB requires a climate step, so fair-temperature is included (as in the reference). `--extremesealevel-step NONE` fails on this branch; omit the flag.
 - `location.lst` is copied from the legacy coupling.ssp585 experiment and holds one site (40.7, -74), so `*-lslr.nc` have 1 location and bamber19 runs in seconds.
-- The generated script has no facts-total step (`output-apptainer/facts-total/` stays empty).
+- **facts-total double-counts Antarctica.** FEB passes all four bamber19 outputs (AIS, EAIS, WAIS, GIS) to facts-total, but AIS already equals
+  EAIS + WAIS, so the generated total equals AIS+EAIS+WAIS+GIS exactly. The correct total is AIS + GIS. 2150 global median: 1312 mm generated vs
+  914 mm correct (+44%); New York: 1181 vs 707 mm. The workflow in the config selects modules, not individual outputs, so this cannot be fixed
+  there; the generated script was deliberately not edited. `run_bam.py` reports it as a warning, and notebook 4 plots the correct AIS + GIS total.
+  Likely cause is how the bamber19-icesheets outputs are tagged in the module registry (unconfirmed); worth raising with the FEB/registry maintainers.
+- Without a `workflows:` entry in `experiment-config.yaml`, `generate-apptainer` emits no facts-total stage at all.
+- Local (New York) results are the global results times a constant per ice sheet (EAIS 1.04, WAIS 1.22, GIS 0.44) for all 500 samples.
 - Image pulls need an exec-capable build dir. Here `APPTAINER_TMPDIR`/`APPTAINER_CACHEDIR` pointed at a nonexistent `/explore/.../containers/cache`,
   panfs failed in mksquashfs under proot, and `/tmp` and `/var/tmp` are `noexec`; `/dev/shm` works. The generated script is not edited; env is set per run.
 - The numpy 1.x/2.x warnings printed on import come from the system conda (bottleneck/numexpr) and are harmless; use `numpy<2` to silence them.
