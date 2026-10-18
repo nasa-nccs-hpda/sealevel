@@ -248,6 +248,10 @@ def validate_outputs(cfg: Config, log) -> Dict:
     import numpy as np
     import xarray as xr
 
+    def p50_final(a):
+        """Final-year median over samples; with several sites, the median across sites of those."""
+        return float(np.median(np.median(a[:, -1], axis=0)))
+
     years = list(range(cfg.pyear_start, cfg.pyear_end + 1, cfg.pyear_step))
     report, ok, warnings = {}, True, []
     bam = os.path.join(cfg.out_dir, "bamber19-icesheets")
@@ -279,7 +283,7 @@ def validate_outputs(cfg: Config, log) -> Dict:
                 fail(f"{mod}/{fn}: samples={ds.sizes.get('samples')} nonfinite={bad}")
             if var == SLR_VAR:  # projection files: samples x years x locations, mm
                 got = [int(y) for y in ds["years"].values]
-                entry["p50_last"] = float(np.percentile(v.isel(years=-1), 50))
+                entry["p50_last"] = p50_final(v.transpose("samples", "years", ...).values)
                 if got != years:
                     fail(f"{mod}/{fn}: years={got}, expected {years}")
                 if v.attrs.get("units") != "mm":
@@ -288,7 +292,7 @@ def validate_outputs(cfg: Config, log) -> Dict:
             log.debug(f"{mod}/{fn}: {entry}")
 
     def series(path):
-        return xr.open_dataset(path)[SLR_VAR].values.squeeze()  # (samples, years)
+        return xr.open_dataset(path)[SLR_VAR].values.squeeze()  # (samples, years) or (samples, years, sites)
 
     # Consistency: AIS = EAIS + WAIS (all years, global)
     comps = {r: os.path.join(bam, f"{r}-gslr.nc") for r in ("AIS", "EAIS", "WAIS", "GIS")}
@@ -311,13 +315,14 @@ def validate_outputs(cfg: Config, log) -> Dict:
         d_correct, d_four = float(np.abs(t - correct).max()), float(np.abs(t - four).max())
         report[f"total_{scale}"] = {"max_abs_diff_vs_AIS_plus_GIS_mm": d_correct,
                                     "max_abs_diff_vs_all_four_mm": d_four,
-                                    "p50_last_total": float(np.median(t[:, -1])),
-                                    "p50_last_AIS_plus_GIS": float(np.median(correct[:, -1]))}
+                                    "p50_last_total": p50_final(t),
+                                    "p50_last_AIS_plus_GIS": p50_final(correct)}
         if d_correct < 0.01:
             log.info(f"facts-total {scale}: equals AIS+GIS")
         elif d_four < 0.01:
             warnings.append(f"facts-total {scale} = AIS+EAIS+WAIS+GIS (double-counts Antarctica); "
-                            f"2150 median {np.median(t[:, -1]):.0f} mm vs {np.median(correct[:, -1]):.0f} mm for AIS+GIS")
+                            f"final-year median {p50_final(t):.0f} mm vs {p50_final(correct):.0f} mm for AIS+GIS"
+                            + (f" (median across {t.shape[-1]} sites)" if t.ndim == 3 else ""))
         else:
             fail(f"facts-total {scale} matches neither AIS+GIS (diff {d_correct}) nor all four (diff {d_four})")
     for w in warnings:

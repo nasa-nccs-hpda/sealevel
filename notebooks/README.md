@@ -159,11 +159,26 @@ Example 2150 global medians (mm): AIS 403, EAIS 49, WAIS 344, GIS 420.
 | With facts-total (first run, pulls its image) | 7m20s | 3m57s | 8s | 413 MB | the facts-total image is pulled twice (same image, two names), ~1.5 min each |
 | Full `run_bam.py` run with facts-total (images cached) | 3m42s | 3m30s | 7s | 410 MB | facts-total 4s (global and local run in parallel); 18/18 output checks OK |
 
+| `bam_ssp585_fixed_gauges`, 1,030 sites (images cached) | 3m48s | 3m25s | 17s | 412 MB | facts-total 3-5 s; 18/18 checks OK |
+
 SIFs: fair-temperature 200 MB, bamber19-icesheets 165 MB (`apptainer_experiments/sif/`); facts-total is pulled under two names.
+
+### Real location list: 1,030 tide gauges (`bam_ssp585_fixed_gauges`)
+`facts2/data/shared_input_data/psmsl_gauges.lst` is the tide-gauge part of the master FACTS list (`facts/input_files/location.lst`): its first 1,030 entries,
+ids up to 10000, tab-separated `name id lat lon`, latitudes -65 to 81. The other ~65,000 entries of the master list are a 1-degree global grid
+(`grid_<lat>_<lon>`) and were left out. `location.lst` (New York only) is unchanged, so the earlier experiments still reproduce.
+The experiment `apptainer_experiments/bam_ssp585_fixed_gauges` is `bam_ssp585_fixed` with `--location-file psmsl_gauges.lst`; its script differs
+only in that one flag. Run it with `run_bam.py --experiment apptainer_experiments/bam_ssp585_fixed_gauges` (3m48s; BAM takes 17 s instead of 7 s).
+Local outputs then have `locations = 1030` (the `locations` coordinate holds the station ids, in list order; `lat`/`lon` per site); global outputs
+still have one location. Checks against the one-site run: global outputs and the New York site (id 12) are identical (max diff 0 mm), and the local
+total equals AIS + GIS at every site (max diff 0 mm). The local / global factor is still constant per site, but varies strongly by site, for example
+Greenland 1.22 at Honolulu, 0.44 at New York and 0.10 at Stockholm, and below 0 close to the ice sheet (Reykjavik -1.71; West Antarctica at the Argentine
+Islands -4.57), i.e. sea level falls locally there.
 
 ### Results notebook
 [`4_bam_ssp585_viz.ipynb`](4_bam_ssp585_viz.ipynb) reads the netCDF outputs (no containers needed, runs in seconds) and shows: the ssp585 warming
-fan, the three ice-sheet contributions through time, their 2150 distributions, the New York factor per ice sheet, the total before and after the registry fix (the fixed experiment's `facts-total`
+fan, the three ice-sheet contributions through time, their 2150 distributions, the local / global factor per ice sheet at one site (`BAM_SITE`, a station name or id, default New York), a map of that factor
+across every site (when the experiment has several, e.g. `BAM_EXPERIMENT=bam_ssp585_fixed_gauges`), the total before and after the registry fix (the fixed experiment's `facts-total`
 against the original's), and a run card from the experiment's `bam_results.json`. It reads `bam_ssp585_fixed` by default; set `BAM_EXPERIMENT` to read another
 experiment (pointed at `bam_ssp585` it prints a double-count warning). It needs `xarray`, `netcdf4`, `matplotlib` and `pandas`; set `FACTS2_WORKSPACE` if the
 workspace is not at `../facts2`, and `FIG_DIR` to also save the PNGs (saved copies are in `facts2/figures/`). It is stored without outputs, so run it before viewing. The older `fair_facts_v2_*` / `3_fair_facts_v2_*`
@@ -173,6 +188,7 @@ viz notebooks expect the lws / sterodynamics layout under `./data/output` and we
 - "experiment-ssp585" = `experiments/coupling.ssp585/config.yml`; FACTS2 = `fact-sealevel` org + FEB + per-module containers (not the legacy `facts/` dir).
 - FEB requires a climate step, so fair-temperature is included (as in the reference). `--extremesealevel-step NONE` fails on this branch; omit the flag.
 - `location.lst` is copied from the legacy coupling.ssp585 experiment and holds one site (40.7, -74), so `*-lslr.nc` have 1 location and bamber19 runs in seconds.
+  For many sites use `psmsl_gauges.lst` (see "Real location list" above).
 - **facts-total double-counts Antarctica in the original experiment (`bam_ssp585`).** FEB passes all four bamber19 outputs (AIS, EAIS, WAIS, GIS) to
   facts-total, but AIS already equals EAIS + WAIS, so that total equals AIS+EAIS+WAIS+GIS exactly. The correct total is AIS + GIS. 2150 global median:
   1312 mm generated vs 914 mm correct (+44%); New York: 1181 vs 707 mm.

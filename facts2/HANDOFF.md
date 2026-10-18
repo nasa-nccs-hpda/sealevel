@@ -28,8 +28,10 @@ Details, I/O table and timings: `notebooks/README.md` (section "FACTS2 BAM ...")
   it deletes afterward; the generated script is not edited. If running the script by hand, export them yourself.
 - `generate-apptainer` emits no facts-total stage unless `experiment-config.yaml` has a `workflows:` entry
   (`all-modules: "bamber19-icesheets"`, under the "Workflows (facts-total)" heading). `setup-experiment` leaves it empty non-interactively.
-- `location.lst` has one site (New_York, 40.70, -74.01), so `*-lslr.nc` have one location and BAM runs in seconds. Local = global x a constant
-  per ice sheet (EAIS 1.04, WAIS 1.22, GIS 0.44) for all samples.
+- `location.lst` has one site (New_York, 40.70, -74.01), so `*-lslr.nc` have one location and BAM runs in seconds. For a real list use
+  `data/shared_input_data/psmsl_gauges.lst` (1,030 tide gauges = entries with id <= 10000 of `../facts/input_files/location.lst`; the other ~65,000
+  entries are a 1-degree grid and were left out) via the experiment `bam_ssp585_fixed_gauges`. Local = global x a constant per ice sheet AND site
+  (New York: EAIS 1.04, WAIS 1.22, GIS 0.44), identical for all samples. Station names are not unique (e.g. two SYDNEY), ids are.
 - Not checked: whether BAM sample i pairs with fair-temperature sample i (module sampling logic not read); do not claim paired trajectories.
 
 ## Findings / assumptions
@@ -54,12 +56,16 @@ Details, I/O table and timings: `notebooks/README.md` (section "FACTS2 BAM ...")
 - `notebooks/run_bam.py` (driver: config validation, preflight, timed run, output validation incl. facts-total check -> `bam_results.json`).
 - README section and `notebooks/4_bam_ssp585_viz.ipynb` (stored without outputs; run it before viewing).
 - Result figures in `facts2/figures/` (from the notebook); recipe for adding a module, with BAM annotated: `INTEGRATING_A_MODULE.md`.
+- Real location list (2026-10-18): `psmsl_gauges.lst` + experiment `bam_ssp585_fixed_gauges` (fixed registry, 1,030 sites). Run 227.5 s, exit 0, 18/18 checks.
+  Verified: global outputs and the New York site identical to the one-site run (0 mm), local total = AIS + GIS at all sites. `run_bam.py` now
+  reports final-year medians correctly for many sites; the notebook has a site selector and a factor map (`facts2/figures/4b_site_factor_map.png`).
+  (The `bam_results.json` inside `bam_ssp585_fixed_gauges/` was written by the older driver; its pooled local medians are not meaningful.)
 - Git: experiment config, generated script, `location.lst` and ignore rules are tracked; data, SIFs, outputs, logs, backups are ignored.
 
 ## Open items
 1. Send the double-count report to the maintainers: issue on `fact-sealevel/facts-experiment-builder` plus a 4-line PR to
    `fact-sealevel/facts-module-registry` (text in `REPORT_facts_total_double_count.md`). Not posted yet; posting is outward-facing, user decides.
-2. Use a real location list if local results matter (currently one site).
+2. (done) Real location list: see "Done". Open question: a different or smaller site set (e.g. a curated few dozen coastal cities) if 1,030 is too many to show.
 3. `run_bam.py --regenerate` has not been run (setup + generate + workflows injection are untested).
 4. Optional: confirm FAIR/BAM sample pairing from the bamber19 module's sampling code.
 
