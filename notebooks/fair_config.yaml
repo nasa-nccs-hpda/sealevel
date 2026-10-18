@@ -17,7 +17,8 @@ global:
 ranges:
   sample_scaling:
     enabled: true
-    partition: "compute"
+    partition: "datamove"
+      #partition: "compute"
     cpus: 16
     mem: "64G"
     nsamps_range: [10]
