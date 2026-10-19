@@ -42,7 +42,7 @@ modules, 6 workflows (wf1e, wf2f, wf2e, wf3f, wf3e, wf4), extreme sea level per 
   Upstream (all open, no comments, 2026-10-19): facts-experiment-builder#144 and registry PR #20 (bamber19), #145 and registry PR #21 (deconto21-ais, larmip-ais; PR branch
   `deconto21-larmip-pass-to-total` on the fork `gtamkin/facts-module-registry`; the registry clone has a `fork` remote). The five held-back findings are drafts in `DRAFT_upstream_issues.md`.
   `gh` is logged out; the login used on 2026-10-19 had scopes repo, read:org, gist (revoke at github.com/settings/applications if wanted). No background processes are running.
-  Disk: `facts2/data` is about 105 GB, of which `data/_downloads` (about 33 GB of archives, already extracted) can be deleted; `apptainer_experiments/sif` 9.3 GB.
+  Disk: `facts2/data` is about 67 GB (the extracted data; the 38 GB `data/_downloads` of archives was deleted on 2026-10-19, `fetch_catalog_data.sh` re-downloads them if needed); `apptainer_experiments/sif` 9.3 GB.
   `notebooks/README.md` section "FACTS2 catalog experiment" now starts with a description of the experiment.
 - **Open items:** (1) watch issue #145 / PR #21 (and #144 / #20); not posted on purpose (FEB is under development; drafts to re-check first are in `DRAFT_upstream_issues.md`): the `--pwd /`, 16 MB `/tmp`, `emulandice-glaciers` input, data-directory and 2100-year-range findings (`gh` is logged out again; the 2026-10-19 login had scopes repo, read:org, gist, revoke at github.com/settings/applications if wanted); (2) when PR #20 is merged, drop the BAM patch; (3) optional: a many-site run of the catalog
   experiment with `psmsl_gauges.lst` (not tried; the emulandice R step is the slow part and its cost with 1,030 sites is unknown).
