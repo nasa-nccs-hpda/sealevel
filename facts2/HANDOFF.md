@@ -32,7 +32,7 @@ modules, 6 workflows (wf1e, wf2f, wf2e, wf3f, wf3e, wf4), extreme sea level per 
 - **End-to-end smoke test of the driver (100 samples), 2026-10-19:** `run_coupling.py --experiment apptainer_experiments/coupling-585-smoke100 --nsamps 100 --regenerate --share` plus
   7 `--join` instances (one restarted for glaciers) from nothing but the data and the two patches: 1 h 56 min, `OK (58 files, 12 totals)`, same warnings, all six workflows and ESL.
   Runtime of emulandice does not depend on the sample count (ais 86 min, gris 83, glaciers 83 at 100 samples vs 84, 78, 92 at 2000). The smoke directory was deleted on 2026-10-19 (outputs are not recoverable; the config and script regenerate in a minute with
-  `--regenerate --generate-only`, a re-run takes about 2 h). Its `.gitignore` line (`apptainer_experiments/coupling-585-smoke100/`) is still there. If a small example is wanted, a reduced run
+  `--regenerate --generate-only`, a re-run takes about 2 h). Its `.gitignore` line was removed afterwards (a re-created smoke directory would show up as untracked; its `output*/` is still ignored). If a small example is wanted, a reduced run
   of wf2f, wf3f and wf4 only (no emulandice) at 100 samples should take about 10 min, but the driver cannot select workflows yet (~20 lines to add; BAM is the existing quick example).
 - **Tests:** `notebooks/tests/test_run_coupling.py` (31 tests, 16 mutations all caught). Not tested: the end-to-end run from an EMPTY workspace with its own downloads (only generation was repeated there:
   identical config and script; the smoke run above used this workspace's data); no comparison of the results with published projections or with the legacy FACTS run.
