@@ -95,7 +95,10 @@ preflight now refuses when a script's `WORKSPACE=` differs from the workspace in
 - Real location list (2026-10-18): `psmsl_gauges.lst` + experiment `bam_ssp585_fixed_gauges` (fixed registry, 1,030 sites). Run 227.5 s, exit 0, all output checks OK.
   Verified: global outputs and the New York site identical to the one-site run (0 mm), local total = AIS + GIS at all sites. `run_bam.py` now
   reports final-year medians correctly for many sites; the notebook has a site selector and a factor map (`facts2/figures/4b_site_factor_map.png`).
-  (The `bam_results.json` inside `bam_ssp585_fixed_gauges/` was written by the older driver; its pooled local medians are not meaningful.)
+  (The three `bam_results.json` summaries (workspace root = original `bam_ssp585`, `bam_ssp585_fixed/`, `bam_ssp585_fixed_gauges/`; git-ignored) were refreshed
+  on 2026-10-18 with the current validator: `outputs` recomputed, each `run` block and `total_s` kept as recorded, `p50_last_definition` added. The only value that
+  changed is the gauge run's local total median: 780.8 mm (pooled over all samples and sites, old driver) -> 870.9 mm (median across the 1,030 sites' medians, equal
+  to the median of AIS + GIS). Trust the current files; backups were scratch and are not kept.)
 - Git: experiment config, generated script, `location.lst` and ignore rules are tracked; data, SIFs, outputs, logs, backups are ignored.
 
 ## Tests
