@@ -1,5 +1,8 @@
 # `bamber19-icesheets` outputs double-count Antarctica in `facts-total` (missing `pass_to_total: false`)
 
+> **Status (2026-10-18):** posted as fact-sealevel/facts-experiment-builder#144 (this text, below this note, is the issue body) with the fix proposed as
+> fact-sealevel/facts-module-registry#20 (4 lines, from the `gtamkin` fork). Both open at the time of writing.
+
 ## Summary
 With the default `--total-all-modules`, the generated `facts-total` job for `bamber19-icesheets` sums all four ice-sheet outputs: AIS, EAIS, WAIS and GIS.
 AIS is already EAIS + WAIS, so Antarctica is counted twice and the total is too high. The cause is in the registry entry, and a 4-line change fixes it (tested end to end, below).

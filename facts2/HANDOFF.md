@@ -29,14 +29,16 @@ with cold image pulls: 622.8 s (pulls 6m53s, models 3m30s), exit 0, totals = AIS
 preflight now refuses when a script's `WORKSPACE=` differs from the workspace in use. The README's setup section is the verified sequence.
 
 ## Known problems (read before trusting the totals)
-- **facts-total double-counts Antarctica: fixed in our experiments by a local registry patch, NOT fixed upstream.**
+- **facts-total double-counts Antarctica: fixed in our experiments by a local registry patch; upstream fix proposed (fact-sealevel/facts-module-registry#20, open), not merged.**
   *Current state:* `bam_ssp585_fixed` and `bam_ssp585_fixed_gauges` give correct totals (AIS + GIS) because the registry change is applied. The change is
   tracked as `facts2/patches/bamber19_pass_to_total.patch` (4 lines, applies cleanly to registry `a085795`). The workspace's registry clone
   (`facts2/facts-module-registry`, git-ignored) has it applied; a fresh `feb init` does NOT, so run
   `git -C facts-module-registry apply ../patches/bamber19_pass_to_total.patch` first (the README commands do). `run_bam.py --regenerate` warns if it is missing,
   and before any run `run_bam.py` checks the generated script's facts-total `--item` lines and refuses if AIS is listed with EAIS/WAIS
   (`--allow-double-count` overrides; `--skip-run` only warns); after a run it checks the output totals. The upstream registry still lacks the fix:
-  the write-up for the maintainers is `facts2/REPORT_facts_total_double_count.md` (not posted; posting is outward-facing, user decides).
+  reported as issue fact-sealevel/facts-experiment-builder#144 and fix proposed as PR fact-sealevel/facts-module-registry#20, both opened 2026-10-18 and open at the time of writing (the PR is from the
+  `gtamkin` fork, branch `bamber19-pass-to-total-eais-wais`, +4 lines); the write-up text is `facts2/REPORT_facts_total_double_count.md`.
+  If the PR is merged and the registry clone is updated, `git apply` of the local patch will fail because the change is already there: then drop the patch step.
   *Background, kept for the record:* FEB passes all four bamber19 outputs (AIS, EAIS, WAIS, GIS) to facts-total; AIS already equals EAIS + WAIS, so the
   original experiment's total is AIS+EAIS+WAIS+GIS exactly. Correct total = AIS + GIS. 2150 global median: 1312 mm generated vs 914 mm correct (+44%).
   The experiment config cannot fix this (its workflows select modules, not outputs); the fix belongs in the registry entry, and the generated scripts
@@ -103,8 +105,13 @@ safeguards: AIS-with-EAIS/WAIS script check, other-workspace script refusal, `re
 Command and caveats: `notebooks/README.md`, section "Tests". What to present and the caveats that must accompany it: section "What to present".
 
 ## Open items
-1. Send the double-count report to the maintainers: issue on `fact-sealevel/facts-experiment-builder` plus a 4-line PR to
-   `fact-sealevel/facts-module-registry` (text in `REPORT_facts_total_double_count.md`). Not posted yet; posting is outward-facing, user decides.
+1. (posted 2026-10-18) Issue fact-sealevel/facts-experiment-builder#144 and 4-line PR fact-sealevel/facts-module-registry#20 (links: https://github.com/fact-sealevel/facts-experiment-builder/issues/144 ,
+   https://github.com/fact-sealevel/facts-module-registry/pull/20). Follow up: watch both for maintainer feedback (they may prefer keeping EAIS+WAIS and dropping
+   AIS instead; the same four lines then apply to the AIS outputs). When merged: update the registry clone, remove the patch step from the README and
+   `facts2/patches/`, and re-verify `--regenerate` against the unpatched upstream registry.
+   Housekeeping: the fork `gtamkin/facts-module-registry` was created for the PR (delete it once the PR is closed); `gh` v2.102.0 is installed at
+   `/panfs/ccds02/nobackup/people/gtamkin/uv-bin/gh` and is logged in as `gtamkin` with scopes repo, read:org, gist (token in `~/.config/gh/hosts.yml`, plain
+   text): run `gh auth logout` when no longer needed.
 2. (done) Real location list: see "Done". Open question: a different or smaller site set (e.g. a curated few dozen coastal cities) if 1,030 is too many to show.
 3. (done 2026-10-18) `run_bam.py --regenerate` verified from a clean workspace, including the model run: see "Clean-workspace smoke test" under Status.
 4. (done 2026-10-18) FAIR/BAM sample pairing checked: see "Sample pairing" above. Reproduce with `notebooks/check_bam_pairing.py` (replicates `pickScenario`, re-runs BAM with shuffled climate members, ~40 s; exit 0 = predictions held):

@@ -245,8 +245,8 @@ mutations) and the suite failed every time, so the tests do detect regressions. 
   sends all of them to the total. **Fix:** `pass_to_total: false` on the four EAIS/WAIS outputs, as `emulandice-ais` does. The experiment
   `bam_ssp585_fixed` was regenerated against a locally patched registry clone and its totals equal AIS + GIS (914 / 707 mm); its config and script are
   committed. The patch itself is tracked as `facts2/patches/bamber19_pass_to_total.patch` (4 lines; applies cleanly to registry `a085795`): apply it to any fresh
-  registry clone, or `run_bam.py --regenerate` will warn that the registry lacks the fix. Run it with `run_bam.py --experiment apptainer_experiments/bam_ssp585_fixed`. The upstream registry is not fixed yet; the report for the
-  maintainers is `facts2/REPORT_facts_total_double_count.md`. The generated scripts were deliberately not edited. `run_bam.py` checks the script's
+  registry clone, or `run_bam.py --regenerate` will warn that the registry lacks the fix. Run it with `run_bam.py --experiment apptainer_experiments/bam_ssp585_fixed`. The upstream registry is not fixed yet: the problem is reported as
+  fact-sealevel/facts-experiment-builder#144 and the fix proposed as fact-sealevel/facts-module-registry#20 (both open, 2026-10-18); the report text is `facts2/REPORT_facts_total_double_count.md`. The generated scripts were deliberately not edited. `run_bam.py` checks the script's
   `facts-total` items before running and refuses a double-counting one (`--allow-double-count` to override), and it also checks the output totals afterwards.
 - Without a `workflows:` entry in `experiment-config.yaml`, `generate-apptainer` emits no facts-total stage at all.
 - **Sample pairing with the climate model is weak.** BAM uses climate member j only to set the probability (from its 2000-2099 integrated warming) of drawing
