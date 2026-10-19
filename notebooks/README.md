@@ -305,6 +305,29 @@ local results are per site, global results are one global mean. Every total is s
 **Results at a glance** (New York, 2100 medians in mm): wf1e 969, wf2f 1066, wf2e 1073, wf3f 1223, wf3e 1232, wf4 1169. Three workflows are valid only through 2100, because emulandice stops there, so 2150
 is reported only for wf2f, wf3f and wf4. Not compared with published projections or with the legacy FACTS run.
 
+### How the modules interact with FACTS2 (common pattern and parameters)
+- **One command per module.** Each module is a container with a single command-line program. Its registry YAML (`facts-module-registry/<module>/<module>_module.yaml`) describes the flags, inputs, outputs and mounted folders, and FEB turns that into the run script;
+  FEB never looks inside a container.
+- **Stages.** A climate module first; the sea-level modules read its output file; `facts-total` adds each workflow's module outputs; the extreme-sea-level module reads the local total. Modules read and write NetCDF files of samples x years x locations, in mm.
+- **One pattern, not one API.** The climate input differs (BAM, larmip and others read `climate.nc` through `--climate-data-file`; emulandice reads `gsat.nc` through `--input-data-file`), emulandice is one program with `ais`, `gris` and `glaciers` subcommands, output flag names differ
+  from module to module (`output-AIS-gslr-file`, `gris-global-out-file`, `ais-global-output-file`, `output-gslr-file`), the seed is `rngseed` in BAM, `seed` elsewhere and absent in emulandice, and not every module honours the year range (emulandice stops at 2100).
+- **Own parameters.** A module can have any number: add the flag to its program and an entry under `arguments` in its YAML (type, `source`, default); FEB then offers it in `experiment-config.yaml`. The extreme-sea-level module has a dozen (`min-days`, `gpd-pot-threshold`, ...).
+- **Common parameters.**
+
+  | Parameter | Meaning | Comes from |
+  |---|---|---|
+  | `pipeline-id` | label for the run, written into the output metadata | experiment-wide (`metadata.*`) |
+  | `nsamps` | number of samples; must match the climate members | experiment-wide |
+  | `scenario` | emissions scenario, e.g. `ssp585` | experiment-wide |
+  | `baseyear` | reference year for the change, e.g. 2005 | experiment-wide |
+  | `pyear-start`, `pyear-end`, `pyear-step` | the projection years | experiment-wide |
+  | `location-file` | the sites (name, id, latitude, longitude) for the local results | experiment-wide |
+  | `fingerprint-dir` | folder of sea-level fingerprints that turn global values into local ones | per module (`module_inputs.*`) |
+  | `chunksize` | how many locations to process at a time, for memory | per module |
+  | seed (`seed` or `rngseed`) | seed for the random numbers | per module |
+
+  A module uses only the parameters its YAML declares.
+
 **Changing the science.** The two modules most likely to be tweaked have roadmaps for third parties: `facts2/SCIENCE_ROADMAP_bamber19.md` and `facts2/SCIENCE_ROADMAP_emulandice.md` (where the science lives, the options in order of effort,
 how to run a changed version, how to check it, the gotchas).
 
