@@ -37,11 +37,12 @@ modules, 6 workflows (wf1e, wf2f, wf2e, wf3f, wf3e, wf4), extreme sea level per 
   of wf2f, wf3f and wf4 only (no emulandice) at 100 samples should take about 10 min, but the driver cannot select workflows yet (~20 lines to add; BAM is the existing quick example).
 - **Tests:** `notebooks/tests/test_run_coupling.py` (31 tests, 16 mutations all caught). Not tested: the end-to-end run from an EMPTY workspace with its own downloads (only generation was repeated there:
   identical config and script; the smoke run above used this workspace's data); no comparison of the results with published projections or with the legacy FACTS run.
-- **Final state (2026-10-19, end of session).** Everything is committed and pushed to `origin/main` (the last content commit is `0257db1`, "README: describe the catalog experiment"; this note was committed after it); working tree clean. Tag
-  `FACTS2-coupling-585-260603-20261019` (annotated, pushed) points at the commit that contains this note; it was moved forward four times with a forced push of that one tag, so a clone that fetched an earlier
+- **Final state (2026-10-19, end of session).** Everything is committed and pushed to `origin/main` (the last content commit is `10b9940`, "Add science roadmaps for bamber19-icesheets and emulandice"; this note was committed after it); working tree clean. Tag
+  `FACTS2-coupling-585-260603-20261019` (annotated, pushed) points at the commit that contains this note; it has been moved forward after every commit with a forced push of that one tag, so a clone that fetched an earlier
   version needs `git fetch --tags --force`. Older tags: `FACTS2-bam_ssp585_fixed_guages-20261018`, `FACTS2-bam_ssp585_fixed_gauges-20261019`, `0.0.1`-`0.0.7`. Tag naming: `FACTS2-<experiment>-<YYYYMMDD>`.
   Upstream (all open, no comments, 2026-10-19): facts-experiment-builder#144 and registry PR #20 (bamber19), #145 and registry PR #21 (deconto21-ais, larmip-ais; PR branch
   `deconto21-larmip-pass-to-total` on the fork `gtamkin/facts-module-registry`; the registry clone has a `fork` remote). The five held-back findings are drafts in `DRAFT_upstream_issues.md`.
+  Science-team documents: `SCIENCE_ROADMAP_bamber19.md` and `SCIENCE_ROADMAP_emulandice.md` (line numbers refer to the 0.2.0 images; items not tried are marked). Deleted this session, none of it recoverable: the smoke100 run, the invalid glaciers output, `data/_downloads`.
   `gh` is logged out; the login used on 2026-10-19 had scopes repo, read:org, gist (revoke at github.com/settings/applications if wanted). No background processes are running.
   Disk: `facts2/data` is about 67 GB (the extracted data; the 38 GB `data/_downloads` of archives was deleted on 2026-10-19, `fetch_catalog_data.sh` re-downloads them if needed); `apptainer_experiments/sif` 9.3 GB.
   `notebooks/README.md` section "FACTS2 catalog experiment" now starts with a description of the experiment.
