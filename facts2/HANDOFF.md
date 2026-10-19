@@ -35,7 +35,7 @@ modules, 6 workflows (wf1e, wf2f, wf2e, wf3f, wf3e, wf4), extreme sea level per 
   delete it or keep it as the example of a small run.
 - **Tests:** `notebooks/tests/test_run_coupling.py` (31 tests, 16 mutations all caught). Not tested: the end-to-end run from an EMPTY workspace with its own downloads (only generation was repeated there:
   identical config and script; the smoke run above used this workspace's data); no comparison of the results with published projections or with the legacy FACTS run.
-- **Open items:** (1) watch issue #145 / PR #21 (and #144 / #20); not yet posted: the `--pwd /`, 16 MB `/tmp`, `emulandice-glaciers` input, data-directory and 2100-year-range findings (`gh` is logged out again; the 2026-10-19 login had scopes repo, read:org, gist, revoke at github.com/settings/applications if wanted); (2) when PR #20 is merged, drop the BAM patch; (3) optional: a many-site run of the catalog
+- **Open items:** (1) watch issue #145 / PR #21 (and #144 / #20); not posted on purpose (FEB is under development; drafts to re-check first are in `DRAFT_upstream_issues.md`): the `--pwd /`, 16 MB `/tmp`, `emulandice-glaciers` input, data-directory and 2100-year-range findings (`gh` is logged out again; the 2026-10-19 login had scopes repo, read:org, gist, revoke at github.com/settings/applications if wanted); (2) when PR #20 is merged, drop the BAM patch; (3) optional: a many-site run of the catalog
   experiment with `psmsl_gauges.lst` (not tried; the emulandice R step is the slow part and its cost with 1,030 sites is unknown).
 
 ## Status: working end to end (BAM exercise)
