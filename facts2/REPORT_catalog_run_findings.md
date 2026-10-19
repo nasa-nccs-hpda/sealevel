@@ -1,8 +1,7 @@
 # Running `coupling-585-260603` from the facts-experiment-catalog with FEB + Apptainer: findings
 
 Written 2026-10-19. Catalog: https://github.com/fact-sealevel/facts-experiment-catalog/tree/main/coupling-585-260603 (`example_cli_command.md`
-and `experiment-config.yaml`, catalog commit `013a903`). Nothing here has been posted upstream; the first finding extends issue
-fact-sealevel/facts-experiment-builder#144 / PR fact-sealevel/facts-module-registry#20, which were opened for BAM only.
+and `experiment-config.yaml`, catalog commit `013a903`). Finding 1 was posted on 2026-10-19 as issue fact-sealevel/facts-experiment-builder#145 and PR fact-sealevel/facts-module-registry#21 (it extends #144 / #20, which cover BAM only); the other findings have not been posted.
 
 Setup: FEB branch `add_apptainer_command` (`main` has no `generate-apptainer`), registry `a085795` plus the local patches in `facts2/patches/`,
 Apptainer 1.5.3, 12 cores, ssp585, 2020-2150 step 10, base year 2005, **2000 samples**, `location.lst` (one site: New York), six workflows

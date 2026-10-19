@@ -177,7 +177,7 @@ levels increases; both are quantiles over the {res['nsamps']} samples, one file 
 ## What to know before using these numbers
 1. **Two registry fixes were needed (local patches, `facts2/patches/`).** facts-total adds every output a module lists, and `bamber19-icesheets`, `deconto21-ais` and `larmip-ais` list an aggregate (AIS) together
    with the parts it already contains, so Antarctica is counted twice. The totals above use AIS only. The unpatched registry would have given global medians higher by {pct_gen_a} in {ya} and {pct_gen} in {yb}
-   (last column of the tables). Only the BAM part has been reported upstream (issue #144 / PR #20, open).
+   (last column of the tables). The BAM part is issue #144 / PR #20, the other two modules issue #145 / PR #21 (all open).
 2. **emulandice stops at 2100.** The three emulandice modules emulate 2020-2100 only; facts-total then silently adds only the items that have a year, so {('the totals of ' + ', '.join(short_wf) + ' are valid through 2100 only (later years omit the emulandice modules and drop)') if short_wf else 'no workflow is affected here'}. That is why {ya} is the comparison year and {yb} is shown for {', '.join(full)} only.
 3. **Samples are not paired trajectories.** facts-total adds sample j of every module. How closely sample j follows climate member j differs a lot (rank correlation with the sample's {ya} warming, null 0 +/- {res['climate_link_null_sd']:.3f}):
    {', '.join(f"{label(k)} {v:+.2f}" for k, v in sorted(res['climate_link'].items(), key=lambda kv: -kv[1]))}.

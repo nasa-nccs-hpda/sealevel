@@ -73,7 +73,7 @@ levels increases; both are quantiles over the 2000 samples, one file per workflo
 ## What to know before using these numbers
 1. **Two registry fixes were needed (local patches, `facts2/patches/`).** facts-total adds every output a module lists, and `bamber19-icesheets`, `deconto21-ais` and `larmip-ais` list an aggregate (AIS) together
    with the parts it already contains, so Antarctica is counted twice. The totals above use AIS only. The unpatched registry would have given global medians higher by wf2f +18%, wf2e +18%, wf3f +33%, wf3e +33%, wf4 +19% in 2100 and wf2f +26%, wf3f +64%, wf4 +21% in 2150
-   (last column of the tables). Only the BAM part has been reported upstream (issue #144 / PR #20, open).
+   (last column of the tables). The BAM part is issue #144 / PR #20, the other two modules issue #145 / PR #21 (all open).
 2. **emulandice stops at 2100.** The three emulandice modules emulate 2020-2100 only; facts-total then silently adds only the items that have a year, so the totals of wf1e, wf2e, wf3e are valid through 2100 only (later years omit the emulandice modules and drop). That is why 2100 is the comparison year and 2150 is shown for wf2f, wf3f, wf4 only.
 3. **Samples are not paired trajectories.** facts-total adds sample j of every module. How closely sample j follows climate member j differs a lot (rank correlation with the sample's 2100 warming, null 0 +/- 0.022):
    emulandice-glaciers +0.67, fittedismip-gris +0.60, tlm-sterodynamics +0.50, ipccar5-glaciers +0.40, emulandice-gris +0.33, deconto21-ais +0.30, bamber19 GIS +0.10, larmip-ais +0.08, bamber19 AIS +0.06, emulandice-ais -0.04, ssp-landwaterstorage -0.04.

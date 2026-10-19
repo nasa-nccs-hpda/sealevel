@@ -13,7 +13,7 @@ git -C facts-module-registry apply ../patches/deconto21_larmip_pass_to_total.pat
 | Patch | Lines | What it does | Upstream |
 |---|---|---|---|
 | `bamber19_pass_to_total.patch` | +4 | `pass_to_total: false` on the EAIS and WAIS global and local outputs of `bamber19-icesheets` | issue facts-experiment-builder#144, PR facts-module-registry#20 (open) |
-| `deconto21_larmip_pass_to_total.patch` | +10 −5 | the same for `deconto21-ais` (EAIS, WAIS; 4 outputs) and `larmip-ais` (EAIS, WAIS, PEN, SMB global; EAIS, WAIS local; 6 outputs) | not posted; see `../REPORT_catalog_run_findings.md` |
+| `deconto21_larmip_pass_to_total.patch` | +10 −5 | the same for `deconto21-ais` (EAIS, WAIS; 4 outputs) and `larmip-ais` (EAIS, WAIS, PEN, SMB global; EAIS, WAIS local; 6 outputs) | issue facts-experiment-builder#145, PR facts-module-registry#21 (open, 2026-10-19); see `../REPORT_catalog_run_findings.md` |
 
 Why: `facts-total` adds up every output a module lists unless it is marked `pass_to_total: false` (the default is `true`). In these three modules the AIS
 output already equals the sum of the regional outputs (checked on real outputs to 0.001 mm), so listing both counts Antarctica twice. The patches keep the
