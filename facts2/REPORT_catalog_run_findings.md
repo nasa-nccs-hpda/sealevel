@@ -56,7 +56,7 @@ container's `/tmp`, which disappears with the container). **Cause (found by keep
 CSV there; at 2000 samples (19 regions x 2000 samples x 9 decades = 342,000 rows, more than 12 MB) the tmpfs fills in the middle of the year 2080 (region_13, sample 741), R's
 writes fail without any message, R exits normally, and the file ends in a half-written line (`Glaciers`), which is what the parser trips over. With 100 samples (about
 0.8 MB) the same code runs to the end, which is why a small test does not show it. Worse, if the parser tolerates the bad line (as our first workaround did) it returns an
-output with 7 years and an all-NaN last year, and facts-total and ESL run on it without complaint; that happened once and the outputs were set aside (`output-invalid-glaciers-tmp16mb/`).
+output with 7 years and an all-NaN last year, and facts-total and ESL run on it without complaint; that happened once and the outputs were set aside (set aside at the time and later deleted).
 `emulandice-ais` and `-gris` write much less and are unaffected.
 Workaround (driver, generated script untouched): the shim binds a fresh directory on `/dev/shm` over `/tmp` for emulandice (`BIG_TMP`), and
 `patches/container/emulandice_glaciers_project.py` (diff against `emulandice_glaciers_project.orig.py`, taken from the image) is bound over the original: it copies R's
