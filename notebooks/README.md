@@ -270,6 +270,41 @@ kopp14-verticallandmotion and ssp-landwaterstorage, combined by facts-total in t
 extremesealevel-pointsoverthreshold on each workflow's local total. Results and caveats: `facts2/SUMMARY_coupling_585.md`; every difference from the
 catalog and every FEB/registry problem met on the way: `facts2/REPORT_catalog_run_findings.md`.
 
+### What the experiment is
+`coupling-585-260603` is a complete FACTS2 sea-level projection run, published in the facts-experiment-catalog as a config and a one-line FEB command.
+
+**Setup.** SSP5-8.5 (`ssp585`), projection years 2020-2150 in steps of 10, base year 2005, 2000 samples, pipeline id `abcd`. One site, New York (40.70 N, -74.01 E), from `location.lst`:
+local results are per site, global results are one global mean. Every total is sea-level change in mm since 2005 for each sample, year and site.
+
+**Four stages.**
+1. *Climate.* `fair-temperature` makes 2000 global-mean temperature trajectories (median warming under SSP5-8.5: 4.6 degC in 2100, 5-95% 3.5-6.3 degC).
+2. *Eleven sea-level modules*, each taking the climate output and projecting one component:
+   Greenland: `fittedismip-gris`, `emulandice-gris`, and the Greenland part of `bamber19-icesheets`. Antarctica: `deconto21-ais`, `larmip-ais`, `emulandice-ais`, and the Antarctic part of
+   `bamber19-icesheets`. Glaciers: `ipccar5-glaciers`, `emulandice-glaciers`. Ocean: `tlm-sterodynamics` (thermal expansion and ocean dynamics; needs a 31 GB CMIP6 data archive).
+   Land water: `ssp-landwaterstorage` (does not depend on the climate output). Vertical land motion: `kopp14-verticallandmotion` (local values only).
+3. *Six workflows.* `facts-total` adds one choice of ice-sheet and glacier models to the same ocean, land-water and vertical-land-motion modules, giving a global and a local total each:
+
+   | Workflow | Greenland | Antarctica | Glaciers |
+   |---|---|---|---|
+   | wf1e | emulandice | emulandice | emulandice |
+   | wf2f | fittedismip | larmip | ipccar5 |
+   | wf2e | emulandice | larmip | emulandice |
+   | wf3f | fittedismip | deconto21 | ipccar5 |
+   | wf3e | emulandice | deconto21 | emulandice |
+   | wf4 | bamber19 | bamber19 | ipccar5 |
+
+   The spread between workflows shows how much the answer depends on which models are chosen.
+4. *Extreme sea level.* `extremesealevel-pointsoverthreshold` runs once per workflow on the local total, with about 1,300 tide-gauge records, and gives a height allowance and an amplification
+   factor for 2100.
+
+**Size and cost.** 30 generated services, 12 distinct images (about 9 GB), about 33 GB of input data. About 6 hours here; each emulandice module takes 80-90 minutes whatever the sample count.
+
+**Differences from the published entry.** `ipccar5-icesheets` is left out (in the catalog command, not in its config); the current registry's images ran, not the catalog's older pins; FEB's extra
+`all-modules` workflow is removed; `emulandice-glaciers` reads `gsat.nc`, as the catalog config does.
+
+**Results at a glance** (New York, 2100 medians in mm): wf1e 969, wf2f 1066, wf2e 1073, wf3f 1223, wf3e 1232, wf4 1169. Three workflows are valid only through 2100, because emulandice stops there, so 2150
+is reported only for wf2f, wf3f and wf4. Not compared with published projections or with the legacy FACTS run.
+
 ### Setup from scratch (the data download is about 33 GB, almost all of it the TLM CMIP6 archive; the 12 distinct images are copied to 30 per-service files of about 9 GB in total)
 ```bash
 export PATH=/panfs/ccds02/nobackup/people/gtamkin/uv-bin:$PATH
