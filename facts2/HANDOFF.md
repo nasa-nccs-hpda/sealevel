@@ -9,7 +9,8 @@ modules, 6 workflows (wf1e, wf2f, wf2e, wf3f, wf3e, wf4), extreme sea level per 
 - **Where things are.** Experiment `apptainer_experiments/coupling-585-260603/` (config + script tracked; outputs, SIFs, logs ignored). Driver `notebooks/run_coupling.py`,
   figures/tables `notebooks/summarize_coupling.py` -> `figures/coupling_585_*.png`, `<experiment>/coupling_summary.json`, `coupling_tables.md`. Results page:
   `SUMMARY_coupling_585.md`. Findings (every FEB/registry/catalog problem met): `REPORT_catalog_run_findings.md`. Data: `fetch_catalog_data.sh`. Patches: `patches/README.md`.
-  How to reproduce: `notebooks/README.md`, section "FACTS2 catalog experiment".
+  How to reproduce: `notebooks/README.md`, section "FACTS2 catalog experiment". For the science team: `SCIENCE_ROADMAP_bamber19.md` and `SCIENCE_ROADMAP_emulandice.md` (where each module's science lives,
+  the options for changing it, how to run and check a changed version).
 - **Needs two registry patches** (both in `patches/`, applied to the git-ignored registry clone BEFORE `setup-experiment`): the BAM one and
   `deconto21_larmip_pass_to_total.patch` (same double-count defect in `deconto21-ais` and `larmip-ais`, verified on real outputs; reported 2026-10-19 as facts-experiment-builder#145 and registry PR #21, both open).
 - **Deviations from the catalog** (details in the findings report): `ipccar5-icesheets` left out (the catalog's command lists it, its config does not); current registry images

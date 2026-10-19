@@ -305,6 +305,9 @@ local results are per site, global results are one global mean. Every total is s
 **Results at a glance** (New York, 2100 medians in mm): wf1e 969, wf2f 1066, wf2e 1073, wf3f 1223, wf3e 1232, wf4 1169. Three workflows are valid only through 2100, because emulandice stops there, so 2150
 is reported only for wf2f, wf3f and wf4. Not compared with published projections or with the legacy FACTS run.
 
+**Changing the science.** The two modules most likely to be tweaked have roadmaps for third parties: `facts2/SCIENCE_ROADMAP_bamber19.md` and `facts2/SCIENCE_ROADMAP_emulandice.md` (where the science lives, the options in order of effort,
+how to run a changed version, how to check it, the gotchas).
+
 ### Setup from scratch (the data download is about 33 GB, almost all of it the TLM CMIP6 archive; the 12 distinct images are copied to 30 per-service files of about 9 GB in total)
 ```bash
 export PATH=/panfs/ccds02/nobackup/people/gtamkin/uv-bin:$PATH
