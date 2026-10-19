@@ -110,8 +110,9 @@ Command and caveats: `notebooks/README.md`, section "Tests". What to present and
    AIS instead; the same four lines then apply to the AIS outputs). When merged: update the registry clone, remove the patch step from the README and
    `facts2/patches/`, and re-verify `--regenerate` against the unpatched upstream registry.
    Housekeeping: the fork `gtamkin/facts-module-registry` was created for the PR (delete it once the PR is closed); `gh` v2.102.0 is installed at
-   `/panfs/ccds02/nobackup/people/gtamkin/uv-bin/gh` and is logged in as `gtamkin` with scopes repo, read:org, gist (token in `~/.config/gh/hosts.yml`, plain
-   text): run `gh auth logout` when no longer needed.
+   `/panfs/ccds02/nobackup/people/gtamkin/uv-bin/gh` and is currently LOGGED OUT (2026-10-18; the local token was removed). The login used for the issue/PR
+   had scopes repo, read:org, gist; logging out does not revoke it on GitHub, so revoke "GitHub CLI" at github.com/settings/applications if not done yet.
+   Any follow-up on the PR needs a fresh `gh auth login`.
 2. (done) Real location list: see "Done". Open question: a different or smaller site set (e.g. a curated few dozen coastal cities) if 1,030 is too many to show.
 3. (done 2026-10-18) `run_bam.py --regenerate` verified from a clean workspace, including the model run: see "Clean-workspace smoke test" under Status.
 4. (done 2026-10-18) FAIR/BAM sample pairing checked: see "Sample pairing" above. Reproduce with `notebooks/check_bam_pairing.py` (replicates `pickScenario`, re-runs BAM with shuffled climate members, ~40 s; exit 0 = predictions held):
