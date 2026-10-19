@@ -2,6 +2,10 @@
 
 > **Status (2026-10-18):** posted as fact-sealevel/facts-experiment-builder#144 (this text, below this note, is the issue body) with the fix proposed as
 > fact-sealevel/facts-module-registry#20 (4 lines, from the `gtamkin` fork). Both open at the time of writing.
+>
+> **Update 2026-10-19 (not posted):** running the catalog experiment `coupling-585-260603` showed the same defect in `deconto21-ais` and `larmip-ais`
+> (checked on real outputs). Findings, the extra patch and the effect on that experiment's totals: `REPORT_catalog_run_findings.md`. Issue #144 and PR #20 cover
+> `bamber19-icesheets` only.
 
 ## Summary
 With the default `--total-all-modules`, the generated `facts-total` job for `bamber19-icesheets` sums all four ice-sheet outputs: AIS, EAIS, WAIS and GIS.

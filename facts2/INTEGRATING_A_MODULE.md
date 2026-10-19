@@ -84,6 +84,9 @@ So every output you mark `output_type` and leave `pass_to_total: true` **is adde
   **BAM currently does not**: it writes AIS and also EAIS + WAIS, so the total counts Antarctica twice
   (2150 global median 1312 mm generated vs 914 mm correct). The fix is `pass_to_total: false` on the EAIS and WAIS outputs, as `emulandice-ais` does.
   The official contributor guide does not mention `pass_to_total`; use `emulandice-ais` or `ebm3-sterodynamics` as references.
+  The same mistake is in `deconto21-ais` (AIS + EAIS + WAIS) and `larmip-ais` (global AIS = EAIS + WAIS + PEN + SMB; local AIS = EAIS + WAIS), found when the
+  catalog experiment `coupling-585-260603` was run (`REPORT_catalog_run_findings.md`). Test any module the same way: on real outputs, compare the aggregate with the sum
+  of its parts (max absolute difference should be ~0 if the aggregate contains them), and read the `--item=` lines of the generated script.
 - Diagnostic outputs (quantiles, intermediate files) should also be `pass_to_total: false`.
 
 ## 6. Test it end to end
@@ -109,7 +112,20 @@ you intend. For BAM, `notebooks/run_bam.py` does all of this and `notebooks/4_ba
 ## 7. Submit
 Fork `fact-sealevel/facts-module-registry`, add `<module>/<module>_module.yaml`, check volumes/sources (section 2), open a PR against `main`.
 
-## Gotchas seen while doing BAM
+## Gotchas seen while doing BAM and the catalog experiment
+- **The container's working directory is `/` (read-only).** The generated script uses `--pwd /`. A module that writes into its working directory fails: the R-based
+  `emulandice` writes `Rplots.pdf` ("cannot open file 'Rplots.pdf'"). Write only to the mounted output volume or to a temp dir inside the container.
+- **`/tmp` inside the container is a 16 MB tmpfs.** FEB runs `apptainer run --containall`, and Apptainer's `sessiondir max size` defaults to 16 MB, so anything a module keeps in `/tmp` is limited to that. `emulandice-glaciers`
+  filled it at 2000 samples; R's writes then fail silently, the result file ends in a half-written line, and a 100-sample test never shows it. Write large intermediates to the mounted output volume, and make
+  the module fail loudly when a file it reads is incomplete.
+- **A climate-file input must name the file the container reads.** `emulandice-glaciers` was registered with `climate.nc`, but needs `gsat.nc` (it reads a `years`
+  variable); the symptom is `KeyError: 'years'` inside the container. The `climate_step_output` key also decides what stage 2 waits for.
+- **Data directory names.** `feb check-data` looks for `module_specific_input_data/<module name>`; the generated script mounts the directory FEB derives
+  itself, which was `emulandice` and `ipccar5` (image names) for two modules. A missing mount source kills the service at container start.
+- **Years.** Some modules write the base year as an extra first column (15 years instead of 14); facts-total copes, hand-written sums must select years first.
+  A module that covers fewer years than the experiment grid is worse: emulandice stops at 2100, and facts-total then adds, for each later year, only the items that
+  have it, so the total silently omits that module (totals file complete, no NaN, values drop at 2110). Make your module write the whole grid (or NaN), and check
+  `years` of every output against `--pyear-start/-end/-step`.
 - `setup-experiment` run non-interactively leaves `workflows:` empty, so the generated script silently has no `facts-total` stage.
 - `--extremesealevel-step NONE` failed on the `add_apptainer_command` branch (looks up a module called NONE); omit the flag.
 - FEB needs a climate step, so a sea-level-only test still runs fair-temperature first.

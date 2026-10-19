@@ -42,3 +42,5 @@ and unreviewed so far. The original experiment `bam_ssp585` appears only as the 
 Exit 0; all outputs finite, units mm, 500 samples × 14 years (× 1,030 locations for local). Wall time 227 s with images already pulled
 (fair-temperature 205 s, bamber19 17 s, facts-total 3 s global and 5 s local); cold run with image pulls about 10 min. Peak memory 412 MB.
 Reproduce from scratch: `notebooks/README.md`, section "Setup from scratch (verified)". Tests: 25 pass in `notebooks/tests/test_run_bam.py`.
+
+See also `SUMMARY_coupling_585.md`: the same kind of summary for the facts-experiment-catalog experiment (all components, six workflows, extreme sea level).

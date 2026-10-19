@@ -1,0 +1,93 @@
+diff --git a/deconto21-ais/deconto21_ais_module.yaml b/deconto21-ais/deconto21_ais_module.yaml
+index 5a5376b..4b15ccf 100644
+--- a/deconto21-ais/deconto21_ais_module.yaml
++++ b/deconto21-ais/deconto21_ais_module.yaml
+@@ -152,6 +152,7 @@ arguments:
+         source: "module_inputs.outputs.output_eais_gslr_file"
+         filename: "eais-gslr.nc"
+         output_type: "global"
++        pass_to_total: false
+         mount:
+           volume: "output"
+           container_path: "/mnt/out"
+@@ -161,6 +162,7 @@ arguments:
+         source: "module_inputs.outputs.output_wais_gslr_file"
+         filename: "wais-gslr.nc"
+         output_type: "global"
++        pass_to_total: false
+         mount:
+           volume: "output"
+           container_path: "/mnt/out"
+@@ -180,6 +182,7 @@ arguments:
+         source: "module_inputs.outputs.output_eais_lslr_file"
+         filename: "eais-lslr.nc"
+         output_type: "local"
++        pass_to_total: false
+         mount:
+           volume: "output"
+           container_path: "/mnt/out"
+@@ -190,6 +193,7 @@ arguments:
+         source: "module_inputs.outputs.output_wais_lslr_file"
+         filename: "wais-lslr.nc"
+         output_type: "local"
++        pass_to_total: false
+         mount:
+           volume: "output"
+           container_path: "/mnt/out"
+diff --git a/larmip-ais/larmip_ais_module.yaml b/larmip-ais/larmip_ais_module.yaml
+index 5cb4488..8698b3f 100644
+--- a/larmip-ais/larmip_ais_module.yaml
++++ b/larmip-ais/larmip_ais_module.yaml
+@@ -168,7 +168,7 @@ arguments:
+         source: "module_inputs.outputs.eais_global_output_file"
+         filename: "eais_global_output.nc"
+         help: "TO DO ADD HELP TEXT"
+-        pass_to_total: true
++        pass_to_total: false
+         output_type: "global"
+         mount:
+           volume: "output"
+@@ -180,7 +180,7 @@ arguments:
+         filename: "wais_global_output.nc"
+         help: "TO DO ADD HELP TEXT"
+         output_type: "global"
+-        pass_to_total: true
++        pass_to_total: false
+         mount:
+           volume: "output"
+           container_path: "/mnt/out"
+@@ -191,7 +191,7 @@ arguments:
+         filename: "pen_global_output.nc"
+         help: "TO DO ADD HELP TEXT"
+         output_type: "global"
+-        pass_to_total: true
++        pass_to_total: false
+         mount:
+           volume: "output"
+           container_path: "/mnt/out"
+@@ -201,7 +201,7 @@ arguments:
+         source: "module_inputs.outputs.smb_global_output_file"
+         filename: "smb_global_output.nc"
+         help: "TO DO ADD HELP TEXT"
+-        pass_to_total: true
++        pass_to_total: false
+         output_type: "global"
+         mount:
+           volume: "output"
+@@ -211,7 +211,7 @@ arguments:
+         type: "file"
+         source: "module_inputs.outputs.wais_local_output_file"
+         filename: "wais_local_output.nc"
+-        pass_to_total: true
++        pass_to_total: false
+         help: "TO DO ADD HELP TEXT"
+         output_type: "local"
+         mount:
+@@ -225,6 +225,7 @@ arguments:
+         filename: "eais_local_output.nc"
+         help: "TO DO ADD HELP TEXT"
+         output_type: "local"
++        pass_to_total: false
+         mount:
+           volume: "output"
+           container_path: "/mnt/out"

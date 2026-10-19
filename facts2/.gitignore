@@ -11,4 +11,6 @@ apptainer_experiments/sif/
 apptainer_experiments/*/output*/
 apptainer_experiments/*/*.pre-total
 bam_results.json
+apptainer_experiments/*/.claims/
+apptainer_experiments/coupling-585-smoke100/
 *.log

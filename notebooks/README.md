@@ -258,3 +258,67 @@ mutations) and the suite failed every time, so the tests do detect regressions. 
 - Image pulls need an exec-capable build dir. Here `APPTAINER_TMPDIR`/`APPTAINER_CACHEDIR` pointed at a nonexistent `/explore/.../containers/cache`,
   panfs failed in mksquashfs under proot, and `/tmp` and `/var/tmp` are `noexec`; `/dev/shm` works. The generated script is not edited; env is set per run.
 - The numpy 1.x/2.x warnings printed on import come from the system conda (bottleneck/numexpr) and are harmless; use `numpy<2` to silence them.
+
+
+## FACTS2 catalog experiment `coupling-585-260603` (11 sea-level modules, 6 workflows, extreme sea level), via Apptainer
+
+The second exercise: instead of BAM alone, run the experiment published in the facts-experiment-catalog
+(https://github.com/fact-sealevel/facts-experiment-catalog/tree/main/coupling-585-260603) with the same FEB branch, registry and Apptainer, driven by
+`notebooks/run_coupling.py`. ssp585, 2020-2150 step 10, base year 2005, **2000 samples**, `location.lst` (New York), pipeline id `abcd`;
+fair-temperature, then fittedismip-gris, deconto21-ais, bamber19-icesheets, emulandice-{ais,gris,glaciers}, larmip-ais, ipccar5-glaciers, tlm-sterodynamics,
+kopp14-verticallandmotion and ssp-landwaterstorage, combined by facts-total in the catalog's six workflows (wf1e, wf2f, wf2e, wf3f, wf3e, wf4), then
+extremesealevel-pointsoverthreshold on each workflow's local total. Results and caveats: `facts2/SUMMARY_coupling_585.md`; every difference from the
+catalog and every FEB/registry problem met on the way: `facts2/REPORT_catalog_run_findings.md`.
+
+### Setup from scratch (the data download is about 33 GB, almost all of it the TLM CMIP6 archive; the 12 distinct images are copied to 30 per-service files of about 9 GB in total)
+```bash
+export PATH=/panfs/ccds02/nobackup/people/gtamkin/uv-bin:$PATH
+git clone <this repository> && cd sealevel/facts2
+FEB="uvx --from git+https://github.com/fact-sealevel/facts-experiment-builder@add_apptainer_command feb"
+$FEB init
+git -C facts-module-registry apply ../patches/bamber19_pass_to_total.patch            # both patches BEFORE setup-experiment (see patches/README.md)
+git -C facts-module-registry apply ../patches/deconto21_larmip_pass_to_total.patch
+bash fetch_catalog_data.sh                    # Zenodo 7478192 archives -> data/; resumable; SKIP_TLM=1 / SKIP_ESL=1 leave out the big ones
+$FEB check-data                               # expect all complete except ipccar5-icesheets (a phantom caused by the ipccar5 link, not in this experiment)
+cd .. && env -u PYTHONPATH PYTHONNOUSERSITE=1 uv run --isolated --python 3.12 --with xarray --with netcdf4 --with 'numpy<2' \
+    python notebooks/run_coupling.py --regenerate --generate-only        # catalog command + workflows, then the preflight and double-count check; runs nothing
+```
+`--regenerate` runs the catalog's `feb setup-experiment` command (without `ipccar5-icesheets`, see the findings report), answers the workflow prompts with the
+catalog's six workflows, removes the extra `all-modules` workflow FEB adds, fills in `pipeline-id: abcd` and the data paths, points emulandice-glaciers at
+`gsat.nc`, and calls `feb generate-apptainer`. Verified in an empty workspace (own `feb init` and downloads): the generated config and script are identical
+to the committed ones apart from the creation date and the absolute workspace path.
+
+### Running
+```bash
+# one instance, sequential (about 4.6 h: the script runs one service at a time; fair-temperature takes 14.5 min and each emulandice module 1.3-1.6 h at any sample count)
+python notebooks/run_coupling.py [-v]                        # pulls each distinct image once, runs, validates every output, writes <experiment>/coupling_results.json
+# the same work shared by several instances of the script (this is how the committed results were produced): claims are directories in <experiment>/.claims
+python notebooks/run_coupling.py --share &                   # first instance
+python notebooks/run_coupling.py --join &                    # as many more as there are independent services; each takes the next unclaimed service
+python notebooks/run_coupling.py --skip-run                  # when all have finished: validate the outputs and write the JSON
+python notebooks/summarize_coupling.py                       # figures facts2/figures/coupling_585_*.png, <experiment>/coupling_summary.json and coupling_tables.md
+```
+Options: `--resume` skips services whose paths all exist (continue a stopped run), `--gate SERVICE=FILE` holds a service until a file exists (used to start while the
+31 GB archive was still downloading), `--allow-double-count` runs even if a facts-total job lists an aggregate with its parts. The generated script is never edited:
+the driver puts a shim for `apptainer` first on `PATH` that (a) runs emulandice with `--pwd /tmp` instead of the read-only `/` (R writes `Rplots.pdf` there),
+(b) binds a large directory (on `/dev/shm`) over `/tmp` for emulandice (the container's own `/tmp` is a 16 MB tmpfs; the glaciers run at 2000 samples fills it, R stops writing
+in the middle of 2080 without a message and the wrapper later fails or, worse, returns NaN years) and a patched `emulandice_glaciers_project.py` that keeps R's CSV and raises when
+it is incomplete (`facts2/patches/container/`), (c) implements the gate, resume and claim options. Run it in an environment isolated from the system conda (see Tests).
+emulandice emulates 2020-2100 only, so wf1e, wf2e and wf3e are valid through 2100; the summary compares all workflows in 2100.
+
+### Checks the driver makes
+Before: every bind-mounted source directory exists; the script was generated for this workspace; no facts-total job lists an aggregate (AIS) with its parts
+(bamber19, deconto21, larmip, emulandice). After: every `.nc` the script names exists, has 2000 samples, finite values, units mm and the 14 projection
+years (a leading 2005 column, which kopp14 and ssp-landwaterstorage write, is accepted, and so is a series that stops early, which emulandice's does, with a warning); every facts-total file equals the sum of the `--item` files it was
+given (max difference 0.001 mm; for each year the sum covers the items that have that year, which is what facts-total does) and `valid_through_year`
+is recorded: emulandice's outputs end in 2100, so wf1e, wf2e and wf3e are only valid through 2100 (a warning, see the findings report, 1b); the extreme-sea-level
+output exists per workflow and is finite; for the four modules above, the aggregate is compared with the cumulative sum of its parts.
+
+### Tests
+`python3 notebooks/tests/test_run_coupling.py -v` (standard library; the 7 netCDF tests also need xarray, netCDF4 and numpy, see the command in the BAM Tests section).
+31 tests: script parsing, the double-count check for each module family, preflight (double count, foreign workspace, missing bind source), the PATH shim executed against a
+fake `apptainer` (non-run passthrough, emulandice working directory, gate, resume, claims, waiting for inputs), `regenerate` (catalog command and answers, config fix-ups,
+existing values kept, refusal to overwrite) and output validation on synthetic files (consistent total passes; a total that is not the sum of its items, a missing file, a wrong
+sample count fail; base-year column accepted; a module ending in 2100 is reported and the total matches the partial sum; extreme-sea-level output required per workflow). Each safeguard was also deliberately broken in a scratch copy
+(16 mutations: the double-count regex and the larmip part list, the preflight checks, each shim feature including the large `/tmp` and the container patch, the config fix-ups,
+the total-vs-items comparison, year alignment, the ESL requirement) and the suite failed every time.
