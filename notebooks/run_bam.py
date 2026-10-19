@@ -56,6 +56,11 @@ def setup_logging(verbose: bool = False, log_file: Optional[str] = None):
     return logging.getLogger(__name__)
 
 
+def _read(path: str) -> str:
+    with open(path) as f:
+        return f.read()
+
+
 # =============================================================================
 # Config
 # =============================================================================
@@ -96,7 +101,7 @@ def validate_config(cfg: Config, log) -> bool:
     if not os.path.isfile(cfg.config_yaml):
         log.error(f"missing {cfg.config_yaml} (run with --regenerate)")
         return False
-    text = open(cfg.config_yaml).read()
+    text = _read(cfg.config_yaml)
     ok = True
     # keys sit on one line, value on the next non-comment line
     want = {"pipeline-id": cfg.pipeline_id, "nsamps": cfg.nsamps, "scenario": cfg.scenario,
@@ -134,7 +139,7 @@ def check_total_items(cfg: Config, log) -> List[str]:
     for the same module and result type counts Antarctica twice. Checked on the script, before anything runs.
     """
     try:
-        text = open(cfg.script).read()
+        text = _read(cfg.script)
     except OSError:
         return []                                  # preflight reports a missing script
     groups: Dict[tuple, List[str]] = {}
@@ -157,7 +162,7 @@ def registry_has_fix(cfg: Config) -> bool:
     """True if the workspace's registry clone marks bamber19 outputs pass_to_total: false (see facts2/patches/)."""
     path = os.path.join(cfg.workspace, "facts-module-registry/bamber19-icesheets/bamber19_icesheets_module.yaml")
     try:
-        return "pass_to_total: false" in open(path).read()
+        return "pass_to_total: false" in _read(path)
     except OSError:
         return False
 
@@ -184,7 +189,7 @@ def regenerate(cfg: Config, log) -> bool:
         return False
     # setup-experiment leaves 'workflows' empty when run non-interactively, and generate-apptainer
     # then emits no facts-total stage. Add the workflow to the config (the script itself is never edited).
-    text = open(cfg.config_yaml).read()
+    text = _read(cfg.config_yaml)
     marker = "##----- Workflows (facts-total) -----##\n"
     if "\nworkflows:" not in text and marker in text:
         open(cfg.config_yaml, "w").write(text.replace(marker, marker + 'workflows:\n  all-modules: "bamber19-icesheets"\n'))
@@ -238,7 +243,7 @@ def preflight(cfg: Config, log) -> bool:
         ok = False
     else:
         # generated scripts embed absolute paths (WORKSPACE=...); one generated elsewhere would read and write THAT workspace
-        m = re.search(r'^WORKSPACE="([^"]+)"', open(cfg.script).read(), re.M)
+        m = re.search(r'^WORKSPACE="([^"]+)"', _read(cfg.script), re.M)
         if m and os.path.realpath(m.group(1)) != os.path.realpath(cfg.workspace):
             log.error(f"{cfg.script} was generated for workspace {m.group(1)}, not {cfg.workspace}; running it would use "
                       f"that workspace's data and outputs. Regenerate here (run_bam.py --regenerate --experiment <new name>).")
@@ -267,7 +272,7 @@ def run_script(cfg: Config, log) -> Dict:
     with open(log_path, "w") as fh:
         rc = subprocess.run(cmd, cwd=cfg.workspace, env=env, stdout=fh, stderr=subprocess.STDOUT).returncode
     wall = time.time() - start
-    text = open(log_path).read()
+    text = _read(log_path)
     shutil.rmtree(run_dir, ignore_errors=True)  # per-run dir only; may live in RAM (/dev/shm)
 
     # Stage timings from the script's own "[HH:MM:SS] ..." log lines
@@ -430,7 +435,7 @@ def main() -> int:
     out = os.path.join(cfg.workspace, "bam_results.json")
     if cfg.skip_run and "run" not in summary and os.path.isfile(out):  # keep timing from the last real run
         try:
-            prev = json.load(open(out)).get("run")
+            prev = json.loads(_read(out)).get("run")
             if prev:
                 summary["run"] = prev
         except (OSError, ValueError):

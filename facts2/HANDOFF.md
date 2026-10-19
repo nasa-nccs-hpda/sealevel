@@ -96,6 +96,12 @@ preflight now refuses when a script's `WORKSPACE=` differs from the workspace in
   (The `bam_results.json` inside `bam_ssp585_fixed_gauges/` was written by the older driver; its pooled local medians are not meaningful.)
 - Git: experiment config, generated script, `location.lst` and ignore rules are tracked; data, SIFs, outputs, logs, backups are ignored.
 
+## Tests
+`notebooks/tests/test_run_bam.py` (25 unittest tests, standard library; netCDF tests need xarray + netCDF4 + numpy and skip otherwise) guard the driver's
+safeguards: AIS-with-EAIS/WAIS script check, other-workspace script refusal, `registry_has_fix` and the tracked patch, `main()` run/override/skip-run behaviour, and
+`validate_outputs` (totals, many-site median definition, missing files). Verified by mutation: seven deliberate breakages in a scratch copy were all caught.
+Command and caveats: `notebooks/README.md`, section "Tests". What to present and the caveats that must accompany it: section "What to present".
+
 ## Open items
 1. Send the double-count report to the maintainers: issue on `fact-sealevel/facts-experiment-builder` plus a 4-line PR to
    `fact-sealevel/facts-module-registry` (text in `REPORT_facts_total_double_count.md`). Not posted yet; posting is outward-facing, user decides.

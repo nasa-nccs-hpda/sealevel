@@ -212,6 +212,27 @@ experiment (pointed at `bam_ssp585` it prints a double-count warning). It needs 
 workspace is not at `../facts2`, and `FIG_DIR` to also save the PNGs (saved copies are in `facts2/figures/`). It is stored without outputs, so run it before viewing. The older `fair_facts_v2_*` / `3_fair_facts_v2_*`
 viz notebooks expect the lws / sterodynamics layout under `./data/output` and were not reused.
 
+### What to present
+- **Lead with the 1,030-gauge run** (`bam_ssp585_fixed_gauges`, notebook with `BAM_EXPERIMENT=bam_ssp585_fixed_gauges`): it shows the global ice-sheet
+  contributions and how the same melt lands very differently at different coasts (the factor map, with sea level falling near the ice sheets).
+- **Use the one-site run** (`bam_ssp585_fixed`, New York) as the quick validation and the default of `run_bam.py`; its global results are identical to the gauge run's.
+- **Show `bam_ssp585` only as the "before"** of the Antarctica fix (the dashed line in the total chart), never as a result: its totals are 44% too high.
+- **Always state the pairing caveat** wherever warming and ice loss appear together: BAM uses climate member j only to set the probability of drawing from
+  Bamber's high rather than low pool, and the ice-sheet realisation is an independent draw (per-sample correlation about +0.05). Present spreads, medians and
+  totals as ensemble statistics, not as temperature-to-ice-loss trajectories. Also state that this is the ice-sheet part only (no glaciers, thermal expansion,
+  land water or vertical land motion), so it is not total sea-level rise.
+- Say that the Antarctica correction is a local registry patch (`facts2/patches/`), not yet fixed upstream.
+
+### Tests
+`python3 notebooks/tests/test_run_bam.py -v` (standard library only; about 1 s, 4 s with the netCDF tests, which run when xarray, netCDF4 and numpy are importable and
+are skipped otherwise; for the full set use an environment isolated from the system conda:
+`env -u PYTHONPATH PYTHONNOUSERSITE=1 uv run --isolated --python 3.12 --with xarray --with netcdf4 --with 'numpy<2' python notebooks/tests/test_run_bam.py`).
+25 tests guard the driver's safeguards: the facts-total `--item` check (AIS listed with EAIS/WAIS, global and local, plus the committed experiments), the refusal of a script
+generated for another workspace, `registry_has_fix` and the tracked patch (exactly four `pass_to_total: false` lines), `main()` (refuses a double-counting script and
+runs nothing; `--allow-double-count` overrides; `--skip-run` only warns), and `validate_outputs` on synthetic netCDF files (correct totals pass; the four-way sum warns;
+many-site medians are medians across sites; missing files and wrong sample counts fail). Each safeguard was also deliberately broken in a scratch copy (seven
+mutations) and the suite failed every time, so the tests do detect regressions. They do not run containers or check the science; the clean-environment run does.
+
 ### Assumptions / known issues
 - "experiment-ssp585" = `experiments/coupling.ssp585/config.yml`; FACTS2 = `fact-sealevel` org + FEB + per-module containers (not the legacy `facts/` dir).
 - FEB requires a climate step, so fair-temperature is included (as in the reference). `--extremesealevel-step NONE` fails on this branch; omit the flag.
