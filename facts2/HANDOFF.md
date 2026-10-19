@@ -31,10 +31,19 @@ modules, 6 workflows (wf1e, wf2f, wf2e, wf3f, wf3e, wf4), extreme sea level per 
   computed from it (git-ignored; safe to delete). The logs `run.join.11.INVALID-glaciers-truncated-tmp.log`, `run.join.5.log`, `run.join.2.log`, `run.join.attempt1.log`, `run.<epoch>.log` record the failed attempts.
 - **End-to-end smoke test of the driver (100 samples), 2026-10-19:** `run_coupling.py --experiment apptainer_experiments/coupling-585-smoke100 --nsamps 100 --regenerate --share` plus
   7 `--join` instances (one restarted for glaciers) from nothing but the data and the two patches: 1 h 56 min, `OK (58 files, 12 totals)`, same warnings, all six workflows and ESL.
-  Runtime of emulandice does not depend on the sample count (ais 86 min, gris 83, glaciers 83 at 100 samples vs 84, 78, 92 at 2000). The directory is git-ignored and not needed;
-  delete it or keep it as the example of a small run.
+  Runtime of emulandice does not depend on the sample count (ais 86 min, gris 83, glaciers 83 at 100 samples vs 84, 78, 92 at 2000). The smoke directory was deleted on 2026-10-19 (outputs are not recoverable; the config and script regenerate in a minute with
+  `--regenerate --generate-only`, a re-run takes about 2 h). Its `.gitignore` line (`apptainer_experiments/coupling-585-smoke100/`) is still there. If a small example is wanted, a reduced run
+  of wf2f, wf3f and wf4 only (no emulandice) at 100 samples should take about 10 min, but the driver cannot select workflows yet (~20 lines to add; BAM is the existing quick example).
 - **Tests:** `notebooks/tests/test_run_coupling.py` (31 tests, 16 mutations all caught). Not tested: the end-to-end run from an EMPTY workspace with its own downloads (only generation was repeated there:
   identical config and script; the smoke run above used this workspace's data); no comparison of the results with published projections or with the legacy FACTS run.
+- **Final state (2026-10-19, end of session).** Everything is committed and pushed to `origin/main` (the last content commit is `0257db1`, "README: describe the catalog experiment"; this note was committed after it); working tree clean. Tag
+  `FACTS2-coupling-585-260603-20261019` (annotated, pushed) points at the commit that contains this note; it was moved forward four times with a forced push of that one tag, so a clone that fetched an earlier
+  version needs `git fetch --tags --force`. Older tags: `FACTS2-bam_ssp585_fixed_guages-20261018`, `FACTS2-bam_ssp585_fixed_gauges-20261019`, `0.0.1`-`0.0.7`. Tag naming: `FACTS2-<experiment>-<YYYYMMDD>`.
+  Upstream (all open, no comments, 2026-10-19): facts-experiment-builder#144 and registry PR #20 (bamber19), #145 and registry PR #21 (deconto21-ais, larmip-ais; PR branch
+  `deconto21-larmip-pass-to-total` on the fork `gtamkin/facts-module-registry`; the registry clone has a `fork` remote). The five held-back findings are drafts in `DRAFT_upstream_issues.md`.
+  `gh` is logged out; the login used on 2026-10-19 had scopes repo, read:org, gist (revoke at github.com/settings/applications if wanted). No background processes are running.
+  Disk: `facts2/data` is about 105 GB, of which `data/_downloads` (about 33 GB of archives, already extracted) can be deleted; `apptainer_experiments/sif` 9.3 GB;
+  `coupling-585-260603/output-invalid-glaciers-tmp16mb/` (set aside, safe to delete). `notebooks/README.md` section "FACTS2 catalog experiment" now starts with a description of the experiment.
 - **Open items:** (1) watch issue #145 / PR #21 (and #144 / #20); not posted on purpose (FEB is under development; drafts to re-check first are in `DRAFT_upstream_issues.md`): the `--pwd /`, 16 MB `/tmp`, `emulandice-glaciers` input, data-directory and 2100-year-range findings (`gh` is logged out again; the 2026-10-19 login had scopes repo, read:org, gist, revoke at github.com/settings/applications if wanted); (2) when PR #20 is merged, drop the BAM patch; (3) optional: a many-site run of the catalog
   experiment with `psmsl_gauges.lst` (not tried; the emulandice R step is the slow part and its cost with 1,030 sites is unknown).
 
