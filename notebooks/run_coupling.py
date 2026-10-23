@@ -246,8 +246,23 @@ CWD_RULES = {"emulandice": "/tmp"}
 # on the last partial line (or, tolerated, would return NaN years) and the CSV is lost with the container's /tmp. The patched file copies the CSV to
 # the output volume first, skips lines that are not data rows, and raises if any region, sample or year is missing (facts2/patches/container/,
 # diff against emulandice_glaciers_project.orig.py).
-CONTAINER_PATCHES = {"emulandice-glaciers": ("patches/container/emulandice_glaciers_project.py",
-                                             "/opt/emulandice/src/emulandice/emulandice_glaciers_project.py")}
+# Several keys may match one image (a service gets the files of every matching key).
+#
+# "emulandice" (all three emulandice services): the R code runs 9 decade years, and for each year it looked up the temperature of every simulation row (about
+# 4,800) with a dplyr filter and print() calls, 0.1 s a row, about 10 minutes a year, 80-90 minutes a run whatever the sample count. The patched main.R does the
+# same lookup with one match(); outputs are bit-identical (checked for emulandice-gris, all 9 years, global and local) and a run takes minutes. r_helper.py
+# loads the patched main.R into the installed package (diffs: facts2/patches/container/emulandice_main.orig.R, emulandice_r_helper.orig.py).
+#
+# "fair-temperature": the 2,000 FaIR runs were a serial Python loop (14.5 minutes). They are independent, so the patched file spreads them over worker
+# processes (FAIR_NPROC, default all cores): 1.5 minutes on 12 cores, bit-identical outputs (checked: gsat, climate, oceantemp, ohc).
+CONTAINER_PATCHES = {
+    "fair-temperature": [("patches/container/fair_temperature_project.py",
+                          "/opt/fair-temperature/src/fair_temperature/fair_temperature_project.py")],
+    "emulandice": [("patches/container/emulandice_r_helper.py", "/opt/emulandice/src/emulandice/r_helper.py"),
+                   ("patches/container/emulandice_main.R", "/opt/emulandice/modules/emulandice/shared/emulandice/R/main.R")],
+    "emulandice-glaciers": [("patches/container/emulandice_glaciers_project.py",
+                             "/opt/emulandice/src/emulandice/emulandice_glaciers_project.py")],
+}
 
 # Services that need a /tmp larger than the 16 MB tmpfs a --containall container gets (`sessiondir max size = 16` in apptainer.conf). emulandice keeps
 # its working files in /tmp; with 2000 samples the glaciers run writes a CSV of more than 12 MB plus other files, the tmpfs fills up in the middle of
@@ -276,8 +291,11 @@ def write_shim(run_dir: str, gates: Tuple[str, ...], resume: bool, log, claims_d
         f'    *{name}*) until [ -e {shlex.quote(path)} ]; do echo "[gate] waiting for {path} ({name})" >&2; sleep 20; done ;;\n'
         for name, _, path in (g.partition("=") for g in gates))
     patch_cases = "".join(
-        f'    *{name}*) args=("run" "--bind={os.path.join(workspace, host)}:{cont}:ro" "${{args[@]:1}}") ;;\n'
-        for name, (host, cont) in CONTAINER_PATCHES.items() if workspace and os.path.isfile(os.path.join(workspace, host)))
+        f'case "$sif" in\n    *{name}*) args=("run" {" ".join(binds)} "${{args[@]:1}}") ;;\nesac\n'
+        for name, binds in ((name, [f'"--bind={os.path.join(workspace, host)}:{cont}:ro"' for host, cont in files
+                                    if workspace and os.path.isfile(os.path.join(workspace, host))])
+                            for name, files in CONTAINER_PATCHES.items())
+        if binds)
     cwd_cases = "".join(f"    *{name}*) cwd={shlex.quote(cwd)} ;;\n" for name, cwd in CWD_RULES.items())
     tmp_cases = "".join(
         f'    *{name}*) want_tmp=1 ;;\n'
@@ -299,9 +317,7 @@ case "$sif" in
 cwd=""
 case "$sif" in
 {cwd_cases}esac
-case "$sif" in
-{patch_cases}esac
-want_tmp=""
+{patch_cases}want_tmp=""
 case "$sif" in
 {tmp_cases}esac
 if [ -n "$cwd" ]; then
@@ -353,13 +369,24 @@ exec "$real" "${{args[@]}}"
     return bindir
 
 
+def reserve_join_log(exp_dir: str) -> str:
+    """Create and return the next free run.join[.N].log. O_EXCL: joins started within the same second must not pick the same name
+    (two did, once, and wrote into one file, which also broke the per-service times read back from the logs)."""
+    k = 1
+    while True:
+        path = os.path.join(exp_dir, "run.join.log" if k == 1 else f"run.join.{k}.log")
+        try:
+            os.close(os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+            return path
+        except FileExistsError:
+            k += 1
+
+
 def run_script(cfg: Config, log) -> Dict:
     env, run_dir = build_env(cfg, log)
     log_path = os.path.join(cfg.exp_dir, "run.log")
     if cfg.join:                                        # one log per joining instance: run.join.log, run.join.2.log, ...
-        k = 1
-        while os.path.exists(log_path := os.path.join(cfg.exp_dir, "run.join.log" if k == 1 else f"run.join.{k}.log")):
-            k += 1
+        log_path = reserve_join_log(cfg.exp_dir)
     if os.path.exists(log_path) and not cfg.join:                       # keep the log of an earlier (e.g. stopped) attempt
         os.replace(log_path, os.path.join(cfg.exp_dir, f"run.{int(os.path.getmtime(log_path))}.log"))
     claims = os.path.join(cfg.exp_dir, ".claims") if (cfg.share or cfg.join) else None

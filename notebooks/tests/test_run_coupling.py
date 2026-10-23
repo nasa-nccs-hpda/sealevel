@@ -178,6 +178,39 @@ class ShimBehaviour(unittest.TestCase):
         self.assertNotIn("emulandice_glaciers_project", self.call(present, "bamber19-icesheets-0.2.0")[1])
         self.assertTrue(self.call(present, "emulandice-glaciers-0.2.0")[1].startswith("REAL run --bind="))
 
+    def test_speedup_patches_are_bound_for_the_right_services(self):
+        ws = os.path.join(self.d, "ws2")
+        os.makedirs(os.path.join(ws, "patches/container"))
+        for name in ("emulandice_r_helper.py", "emulandice_main.R", "fair_temperature_project.py", "emulandice_glaciers_project.py"):
+            open(os.path.join(ws, "patches/container", name), "w").close()
+        with mock.patch.dict(os.environ, {"PATH": self.path}):
+            b = rc.write_shim(os.path.join(self.d, "run_sp"), (), False, mock.MagicMock(), None, ws)
+        helper = "/opt/emulandice/src/emulandice/r_helper.py:ro"
+        main_r = "/opt/emulandice/modules/emulandice/shared/emulandice/R/main.R:ro"
+        fair = "/opt/fair-temperature/src/fair_temperature/fair_temperature_project.py:ro"
+        glaciers = "/opt/emulandice/src/emulandice/emulandice_glaciers_project.py:ro"
+        for svc in ("emulandice-ais-0.2.0", "emulandice-gris-0.2.0", "emulandice-glaciers-0.2.0"):
+            out = self.call(b, svc)[1]
+            self.assertIn(helper, out, svc)
+            self.assertIn(main_r, out, svc)
+            self.assertNotIn(fair, out, svc)
+        self.assertIn(glaciers, self.call(b, "emulandice-glaciers-0.2.0")[1])
+        self.assertNotIn(glaciers, self.call(b, "emulandice-gris-0.2.0")[1])
+        out = self.call(b, "fair-temperature-0.2.1")[1]
+        self.assertIn(fair, out)
+        self.assertNotIn(helper, out)
+        for svc in ("bamber19-icesheets-0.2.0", "tlm-sterodynamics-0.3.2", "facts-total-wf1e-global-0.2.1"):
+            self.assertNotIn("--bind=" + ws, self.call(b, svc)[1], svc)
+
+    def test_simultaneous_joins_get_different_log_files(self):
+        import concurrent.futures
+        d = os.path.join(self.d, "joinlogs")
+        os.makedirs(d)
+        with concurrent.futures.ThreadPoolExecutor(8) as ex:
+            names = list(ex.map(lambda _: rc.reserve_join_log(d), range(24)))
+        self.assertEqual(len(set(names)), 24)
+        self.assertEqual(os.path.basename(names[0]).startswith("run.join"), True)
+
     def test_emulandice_gets_a_large_private_tmp_that_is_removed_afterwards(self):
         run_dir = os.path.join(self.d, "run_tmp")
         with mock.patch.dict(os.environ, {"PATH": self.path}):

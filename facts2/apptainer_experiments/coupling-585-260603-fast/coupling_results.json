@@ -1,0 +1,1126 @@
+{
+  "run": {
+    "exit": 0,
+    "wall_s": 1265.7,
+    "image_prep_s": 0.0,
+    "images_pulled_by_driver": 0,
+    "service_s": {
+      "fair-temperature-0.2.1": 88,
+      "kopp14-verticallandmotion-0.1.0": 10,
+      "ssp-landwaterstorage-0.3.0": 0,
+      "fittedismip-gris-0.1.2": 0,
+      "deconto21-ais-0.1.3": 1,
+      "bamber19-icesheets-0.2.0": 0,
+      "emulandice-ais-0.2.0": 0,
+      "emulandice-gris-0.2.0": 156,
+      "emulandice-glaciers-0.2.0": 0,
+      "larmip-ais-0.1.2": 0,
+      "ipccar5-glaciers-0.1.3": 0,
+      "tlm-sterodynamics-0.3.2": 0,
+      "facts-total-wf1e-global-0.2.1": 0,
+      "facts-total-wf2f-local-0.2.1": 0,
+      "facts-total-wf1e-local-0.2.1": 0,
+      "facts-total-wf3f-global-0.2.1": 0,
+      "facts-total-wf2f-global-0.2.1": 0,
+      "facts-total-wf2e-global-0.2.1": 0,
+      "facts-total-wf2e-local-0.2.1": 0,
+      "facts-total-wf3f-local-0.2.1": 0,
+      "facts-total-wf3e-local-0.2.1": 0,
+      "facts-total-wf3e-global-0.2.1": 0,
+      "facts-total-wf4-local-0.2.1": 0,
+      "facts-total-wf4-global-0.2.1": 0,
+      "extremesealevel-pointsoverthreshold-wf1e-0.2.0": 0,
+      "extremesealevel-pointsoverthreshold-wf2f-0.2.0": 166,
+      "extremesealevel-pointsoverthreshold-wf2e-0.2.0": 0,
+      "extremesealevel-pointsoverthreshold-wf3f-0.2.0": 40,
+      "extremesealevel-pointsoverthreshold-wf3e-0.2.0": 804,
+      "extremesealevel-pointsoverthreshold-wf4-0.2.0": 0
+    },
+    "max_rss_mb": 319.7
+  },
+  "service_times_from_logs": {
+    "logs": [
+      "run.join.2.log",
+      "run.join.3.log",
+      "run.join.4.log",
+      "run.join.log",
+      "run.log"
+    ],
+    "services": {
+      "ssp-landwaterstorage-0.3.0": {
+        "log": "run.join.2.log",
+        "start_s": 62694,
+        "end_s": 62705,
+        "seconds": 11,
+        "start": "17:24:54",
+        "end": "17:25:05"
+      },
+      "larmip-ais-0.1.2": {
+        "log": "run.join.2.log",
+        "start_s": 62705,
+        "end_s": 62742,
+        "seconds": 37,
+        "start": "17:25:05",
+        "end": "17:25:42"
+      },
+      "extremesealevel-pointsoverthreshold-wf1e-0.2.0": {
+        "log": "run.join.2.log",
+        "start_s": 62742,
+        "end_s": 63864,
+        "seconds": 1122,
+        "includes_wait_for_inputs": true,
+        "start": "17:25:42",
+        "end": "17:44:24"
+      },
+      "bamber19-icesheets-0.2.0": {
+        "log": "run.join.3.log",
+        "start_s": 62694,
+        "end_s": 62708,
+        "seconds": 14,
+        "start": "17:24:54",
+        "end": "17:25:08"
+      },
+      "tlm-sterodynamics-0.3.2": {
+        "log": "run.join.3.log",
+        "start_s": 62708,
+        "end_s": 62930,
+        "seconds": 222,
+        "start": "17:25:08",
+        "end": "17:28:50"
+      },
+      "extremesealevel-pointsoverthreshold-wf2e-0.2.0": {
+        "log": "run.join.3.log",
+        "start_s": 62930,
+        "end_s": 63870,
+        "seconds": 940,
+        "includes_wait_for_inputs": true,
+        "start": "17:28:50",
+        "end": "17:44:30"
+      },
+      "emulandice-ais-0.2.0": {
+        "log": "run.join.4.log",
+        "start_s": 62694,
+        "end_s": 63185,
+        "seconds": 491,
+        "start": "17:24:54",
+        "end": "17:33:05"
+      },
+      "extremesealevel-pointsoverthreshold-wf4-0.2.0": {
+        "log": "run.join.4.log",
+        "start_s": 63186,
+        "end_s": 63227,
+        "seconds": 41,
+        "includes_wait_for_inputs": true,
+        "start": "17:33:06",
+        "end": "17:33:47"
+      },
+      "fair-temperature-0.2.1": {
+        "log": "run.log",
+        "start_s": 62599,
+        "end_s": 62687,
+        "seconds": 88,
+        "start": "17:23:19",
+        "end": "17:24:47"
+      },
+      "kopp14-verticallandmotion-0.1.0": {
+        "log": "run.log",
+        "start_s": 62687,
+        "end_s": 62697,
+        "seconds": 10,
+        "start": "17:24:47",
+        "end": "17:24:57"
+      },
+      "emulandice-gris-0.2.0": {
+        "log": "run.log",
+        "start_s": 62698,
+        "end_s": 62854,
+        "seconds": 156,
+        "start": "17:24:58",
+        "end": "17:27:34"
+      },
+      "extremesealevel-pointsoverthreshold-wf2f-0.2.0": {
+        "log": "run.log",
+        "start_s": 62854,
+        "end_s": 63020,
+        "seconds": 166,
+        "includes_wait_for_inputs": true,
+        "start": "17:27:34",
+        "end": "17:30:20"
+      },
+      "extremesealevel-pointsoverthreshold-wf3f-0.2.0": {
+        "log": "run.log",
+        "start_s": 63020,
+        "end_s": 63060,
+        "seconds": 40,
+        "includes_wait_for_inputs": true,
+        "start": "17:30:20",
+        "end": "17:31:00"
+      },
+      "extremesealevel-pointsoverthreshold-wf3e-0.2.0": {
+        "log": "run.log",
+        "start_s": 63060,
+        "end_s": 63864,
+        "seconds": 804,
+        "includes_wait_for_inputs": true,
+        "start": "17:31:00",
+        "end": "17:44:24"
+      }
+    }
+  },
+  "outputs": {
+    "files": {
+      "bamber19-icesheets/AIS-gslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 337.148681640625
+      },
+      "bamber19-icesheets/AIS-lslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 415.28070068359375
+      },
+      "bamber19-icesheets/EAIS-gslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 34.25884246826172
+      },
+      "bamber19-icesheets/EAIS-lslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 35.585914611816406
+      },
+      "bamber19-icesheets/GIS-gslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 396.70660400390625
+      },
+      "bamber19-icesheets/GIS-lslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 174.43121337890625
+      },
+      "bamber19-icesheets/WAIS-gslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 303.12713623046875
+      },
+      "bamber19-icesheets/WAIS-lslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 369.9697265625
+      },
+      "deconto21-ais/ais-gslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 2095.199951171875
+      },
+      "deconto21-ais/ais-lslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 2394.931884765625
+      },
+      "deconto21-ais/eais-gslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 884.3099975585938
+      },
+      "deconto21-ais/eais-lslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 918.565185546875
+      },
+      "deconto21-ais/wais-gslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 1200.39501953125
+      },
+      "deconto21-ais/wais-lslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 1465.0941162109375
+      },
+      "emulandice-ais/output-gslr-eais.nc": {
+        "dims": {
+          "locations": 1,
+          "samples": 2000,
+          "years": 9
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "years_end": 2100,
+        "p50_last": 15.841800689697266
+      },
+      "emulandice-ais/output-gslr-pen.nc": {
+        "dims": {
+          "locations": 1,
+          "samples": 2000,
+          "years": 9
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "years_end": 2100,
+        "p50_last": 11.847753524780273
+      },
+      "emulandice-ais/output-gslr-wais.nc": {
+        "dims": {
+          "locations": 1,
+          "samples": 2000,
+          "years": 9
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "years_end": 2100,
+        "p50_last": 55.000038146972656
+      },
+      "emulandice-ais/output-gslr.nc": {
+        "dims": {
+          "locations": 1,
+          "samples": 2000,
+          "years": 9
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "years_end": 2100,
+        "p50_last": 82.47186279296875
+      },
+      "emulandice-ais/output-lslr-eais.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 9,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "years_end": 2100,
+        "p50_last": 16.455459594726562
+      },
+      "emulandice-ais/output-lslr-wais.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 9,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "years_end": 2100,
+        "p50_last": 81.44387817382812
+      },
+      "emulandice-ais/output-lslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 9,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "years_end": 2100,
+        "p50_last": 98.12956237792969
+      },
+      "emulandice-glaciers/output-gslr.nc": {
+        "dims": {
+          "locations": 1,
+          "samples": 2000,
+          "years": 9
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "years_end": 2100,
+        "p50_last": 174.8092803955078
+      },
+      "emulandice-glaciers/output-lslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 9,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "years_end": 2100,
+        "p50_last": 144.19998168945312
+      },
+      "emulandice-gris/output-gslr-gris.nc": {
+        "dims": {
+          "locations": 1,
+          "samples": 2000,
+          "years": 9
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "years_end": 2100,
+        "p50_last": 125.73202514648438
+      },
+      "emulandice-gris/output-lslr-gris.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 9,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "years_end": 2100,
+        "p50_last": 55.284156799316406
+      },
+      "facts-total/wf1e_global_total.nc": {
+        "dims": {
+          "locations": 1,
+          "samples": 2000,
+          "years": 14
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 582.997802734375
+      },
+      "facts-total/wf1e_local_total.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 1110.072998046875
+      },
+      "facts-total/wf2e_global_total.nc": {
+        "dims": {
+          "locations": 1,
+          "samples": 2000,
+          "years": 14
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 1000.7406005859375
+      },
+      "facts-total/wf2e_local_total.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 1630.840087890625
+      },
+      "facts-total/wf2f_global_total.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 1549.1741943359375
+      },
+      "facts-total/wf2f_local_total.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 1961.50537109375
+      },
+      "facts-total/wf3e_global_total.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 2721.787109375
+      },
+      "facts-total/wf3e_local_total.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 3532.697265625
+      },
+      "facts-total/wf3f_global_total.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 3275.463134765625
+      },
+      "facts-total/wf3f_local_total.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 3868.7509765625
+      },
+      "facts-total/wf4_global_total.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 1709.147705078125
+      },
+      "facts-total/wf4_local_total.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 1988.2039794921875
+      },
+      "fair-temperature/climate.nc": {
+        "dims": {
+          "year": 751
+        }
+      },
+      "fair-temperature/gsat.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 751,
+          "locations": 1
+        },
+        "variable": "surface_temperature",
+        "units": "degC",
+        "nonfinite": 0
+      },
+      "fair-temperature/oceantemp.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 751,
+          "locations": 1
+        },
+        "variable": "deep_ocean_temperature",
+        "units": "degC",
+        "nonfinite": 0
+      },
+      "fair-temperature/ohc.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 751,
+          "locations": 1
+        },
+        "variable": "ocean_heat_content",
+        "units": "J",
+        "nonfinite": 0
+      },
+      "fittedismip-gris/gris-global-out.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 270.3326286797869
+      },
+      "fittedismip-gris/gris-local-out.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 118.86479187011719
+      },
+      "ipccar5-glaciers/global-output.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 285.4139404296875
+      },
+      "ipccar5-glaciers/local-output.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 222.49005126953125
+      },
+      "kopp14-verticallandmotion/lslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 15,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "extra_baseyear_column": true,
+        "p50_last": 218.95001220703125
+      },
+      "larmip-ais/ais_global_output.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 399.25604248046875
+      },
+      "larmip-ais/ais_local_output.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 471.5576477050781
+      },
+      "larmip-ais/eais_global_output.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 116.80331420898438
+      },
+      "larmip-ais/eais_local_output.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 93.84259033203125
+      },
+      "larmip-ais/pen_global_output.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 11.10220718383789
+      },
+      "larmip-ais/smb_global_output.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": -98.9788818359375
+      },
+      "larmip-ais/wais_global_output.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 353.8560791015625
+      },
+      "larmip-ais/wais_local_output.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 14,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 361.69732666015625
+      },
+      "ssp-landwaterstorage/gslr.nc": {
+        "dims": {
+          "locations": 1,
+          "samples": 2000,
+          "years": 15
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "extra_baseyear_column": true,
+        "p50_last": 50.7000732421875
+      },
+      "ssp-landwaterstorage/lslr.nc": {
+        "dims": {
+          "samples": 2000,
+          "years": 15,
+          "locations": 1
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "extra_baseyear_column": true,
+        "p50_last": 50.75558853149414
+      },
+      "tlm-sterodynamics/gslr.nc": {
+        "dims": {
+          "locations": 1,
+          "samples": 2000,
+          "years": 14
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 531.8109130859375
+      },
+      "tlm-sterodynamics/lslr.nc": {
+        "dims": {
+          "years": 14,
+          "locations": 1,
+          "samples": 2000
+        },
+        "variable": "sea_level_change",
+        "units": "mm",
+        "nonfinite": 0,
+        "p50_last": 842.0333862304688
+      }
+    },
+    "totals": {
+      "wf1e-global": {
+        "items": [
+          "emulandice-ais/output-gslr.nc",
+          "emulandice-gris/output-gslr-gris.nc",
+          "emulandice-glaciers/output-gslr.nc",
+          "tlm-sterodynamics/gslr.nc",
+          "ssp-landwaterstorage/gslr.nc"
+        ],
+        "max_abs_diff_vs_sum_of_items_mm": 0.0,
+        "valid_through_year": 2100,
+        "p05_last": 424.58221740722655,
+        "p50_last": 582.997802734375,
+        "p95_last": 806.0557952880858,
+        "n_sites": 1
+      },
+      "wf1e-local": {
+        "items": [
+          "emulandice-ais/output-lslr.nc",
+          "emulandice-gris/output-lslr-gris.nc",
+          "emulandice-glaciers/output-lslr.nc",
+          "tlm-sterodynamics/lslr.nc",
+          "kopp14-verticallandmotion/lslr.nc",
+          "ssp-landwaterstorage/lslr.nc"
+        ],
+        "max_abs_diff_vs_sum_of_items_mm": 0.000244140625,
+        "valid_through_year": 2100,
+        "p05_last": 714.7507690429687,
+        "p50_last": 1110.072998046875,
+        "p95_last": 1535.5942871093748,
+        "n_sites": 1
+      },
+      "wf2f-global": {
+        "items": [
+          "fittedismip-gris/gris-global-out.nc",
+          "larmip-ais/ais_global_output.nc",
+          "ipccar5-glaciers/global-output.nc",
+          "tlm-sterodynamics/gslr.nc",
+          "ssp-landwaterstorage/gslr.nc"
+        ],
+        "max_abs_diff_vs_sum_of_items_mm": 0.00048828125,
+        "valid_through_year": 2150,
+        "p05_last": 1084.8982360839843,
+        "p50_last": 1549.1741943359375,
+        "p95_last": 2566.6269409179686,
+        "n_sites": 1
+      },
+      "wf2f-local": {
+        "items": [
+          "fittedismip-gris/gris-local-out.nc",
+          "larmip-ais/ais_local_output.nc",
+          "ipccar5-glaciers/local-output.nc",
+          "tlm-sterodynamics/lslr.nc",
+          "kopp14-verticallandmotion/lslr.nc",
+          "ssp-landwaterstorage/lslr.nc"
+        ],
+        "max_abs_diff_vs_sum_of_items_mm": 0.00048828125,
+        "valid_through_year": 2150,
+        "p05_last": 1301.2826721191407,
+        "p50_last": 1961.50537109375,
+        "p95_last": 3114.5860595703125,
+        "n_sites": 1
+      },
+      "wf2e-global": {
+        "items": [
+          "emulandice-gris/output-gslr-gris.nc",
+          "emulandice-glaciers/output-gslr.nc",
+          "larmip-ais/ais_global_output.nc",
+          "tlm-sterodynamics/gslr.nc",
+          "ssp-landwaterstorage/gslr.nc"
+        ],
+        "max_abs_diff_vs_sum_of_items_mm": 0.0,
+        "valid_through_year": 2100,
+        "p05_last": 599.8219573974609,
+        "p50_last": 1000.7406005859375,
+        "p95_last": 1963.2762084960937,
+        "n_sites": 1
+      },
+      "wf2e-local": {
+        "items": [
+          "emulandice-gris/output-lslr-gris.nc",
+          "emulandice-glaciers/output-lslr.nc",
+          "larmip-ais/ais_local_output.nc",
+          "tlm-sterodynamics/lslr.nc",
+          "kopp14-verticallandmotion/lslr.nc",
+          "ssp-landwaterstorage/lslr.nc"
+        ],
+        "max_abs_diff_vs_sum_of_items_mm": 0.00048828125,
+        "valid_through_year": 2100,
+        "p05_last": 1001.4391937255859,
+        "p50_last": 1630.840087890625,
+        "p95_last": 2746.1111083984374,
+        "n_sites": 1
+      },
+      "wf3f-global": {
+        "items": [
+          "fittedismip-gris/gris-global-out.nc",
+          "deconto21-ais/ais-gslr.nc",
+          "ipccar5-glaciers/global-output.nc",
+          "tlm-sterodynamics/gslr.nc",
+          "ssp-landwaterstorage/gslr.nc"
+        ],
+        "max_abs_diff_vs_sum_of_items_mm": 0.0009765625,
+        "valid_through_year": 2150,
+        "p05_last": 1227.9928955078126,
+        "p50_last": 3275.463134765625,
+        "p95_last": 5335.5251953125,
+        "n_sites": 1
+      },
+      "wf3f-local": {
+        "items": [
+          "fittedismip-gris/gris-local-out.nc",
+          "deconto21-ais/ais-lslr.nc",
+          "ipccar5-glaciers/local-output.nc",
+          "tlm-sterodynamics/lslr.nc",
+          "kopp14-verticallandmotion/lslr.nc",
+          "ssp-landwaterstorage/lslr.nc"
+        ],
+        "max_abs_diff_vs_sum_of_items_mm": 0.00048828125,
+        "valid_through_year": 2150,
+        "p05_last": 1598.027587890625,
+        "p50_last": 3868.7509765625,
+        "p95_last": 6255.115893554687,
+        "n_sites": 1
+      },
+      "wf3e-global": {
+        "items": [
+          "deconto21-ais/ais-gslr.nc",
+          "emulandice-gris/output-gslr-gris.nc",
+          "emulandice-glaciers/output-gslr.nc",
+          "tlm-sterodynamics/gslr.nc",
+          "ssp-landwaterstorage/gslr.nc"
+        ],
+        "max_abs_diff_vs_sum_of_items_mm": 0.0,
+        "valid_through_year": 2100,
+        "p05_last": 770.4439666748046,
+        "p50_last": 2721.787109375,
+        "p95_last": 4784.547875976563,
+        "n_sites": 1
+      },
+      "wf3e-local": {
+        "items": [
+          "deconto21-ais/ais-lslr.nc",
+          "emulandice-gris/output-lslr-gris.nc",
+          "emulandice-glaciers/output-lslr.nc",
+          "tlm-sterodynamics/lslr.nc",
+          "kopp14-verticallandmotion/lslr.nc",
+          "ssp-landwaterstorage/lslr.nc"
+        ],
+        "max_abs_diff_vs_sum_of_items_mm": 0.00048828125,
+        "valid_through_year": 2100,
+        "p05_last": 1309.2918884277344,
+        "p50_last": 3532.697265625,
+        "p95_last": 5911.835766601563,
+        "n_sites": 1
+      },
+      "wf4-global": {
+        "items": [
+          "bamber19-icesheets/AIS-gslr.nc",
+          "bamber19-icesheets/GIS-gslr.nc",
+          "ipccar5-glaciers/global-output.nc",
+          "tlm-sterodynamics/gslr.nc",
+          "ssp-landwaterstorage/gslr.nc"
+        ],
+        "max_abs_diff_vs_sum_of_items_mm": 0.0,
+        "valid_through_year": 2150,
+        "p05_last": 863.9001708984375,
+        "p50_last": 1709.147705078125,
+        "p95_last": 5518.964868164061,
+        "n_sites": 1
+      },
+      "wf4-local": {
+        "items": [
+          "bamber19-icesheets/AIS-lslr.nc",
+          "bamber19-icesheets/GIS-lslr.nc",
+          "ipccar5-glaciers/local-output.nc",
+          "tlm-sterodynamics/lslr.nc",
+          "kopp14-verticallandmotion/lslr.nc",
+          "ssp-landwaterstorage/lslr.nc"
+        ],
+        "max_abs_diff_vs_sum_of_items_mm": 0.0009765625,
+        "valid_through_year": 2150,
+        "p05_last": 1120.4247741699219,
+        "p50_last": 1988.2039794921875,
+        "p95_last": 5893.827172851562,
+        "n_sites": 1
+      }
+    },
+    "extreme_sea_level": {
+      "wf1e": {
+        "files": [
+          "abcd_id12_year2100_extremesl.nc"
+        ],
+        "nonfinite_allowance": 0
+      },
+      "wf2e": {
+        "files": [
+          "abcd_id12_year2100_extremesl.nc"
+        ],
+        "nonfinite_allowance": 0
+      },
+      "wf2f": {
+        "files": [
+          "abcd_id12_year2100_extremesl.nc"
+        ],
+        "nonfinite_allowance": 0
+      },
+      "wf3e": {
+        "files": [
+          "abcd_id12_year2100_extremesl.nc"
+        ],
+        "nonfinite_allowance": 0
+      },
+      "wf3f": {
+        "files": [
+          "abcd_id12_year2100_extremesl.nc"
+        ],
+        "nonfinite_allowance": 0
+      },
+      "wf4": {
+        "files": [
+          "abcd_id12_year2100_extremesl.nc"
+        ],
+        "nonfinite_allowance": 0
+      }
+    },
+    "aggregates": {
+      "bamber19-icesheets/global": {
+        "aggregate": "AIS-gslr.nc",
+        "max_abs_diff_aggregate_vs_cumulative_parts_mm": {
+          "EAIS-gslr": 4516.10302734375,
+          "EAIS-gslr+WAIS-gslr": 0.0009765625
+        }
+      },
+      "bamber19-icesheets/local": {
+        "aggregate": "AIS-lslr.nc",
+        "max_abs_diff_aggregate_vs_cumulative_parts_mm": {
+          "EAIS-lslr": 5511.94921875,
+          "EAIS-lslr+WAIS-lslr": 0.0009765625
+        }
+      },
+      "deconto21-ais/global": {
+        "aggregate": "ais-gslr.nc",
+        "max_abs_diff_aggregate_vs_cumulative_parts_mm": {
+          "eais-gslr": 2516.570068359375,
+          "eais-gslr+wais-gslr": 0.0
+        }
+      },
+      "deconto21-ais/local": {
+        "aggregate": "ais-lslr.nc",
+        "max_abs_diff_aggregate_vs_cumulative_parts_mm": {
+          "eais-lslr": 3071.4990234375,
+          "eais-lslr+wais-lslr": 0.00048828125
+        }
+      },
+      "larmip-ais/global": {
+        "aggregate": "ais_global_output.nc",
+        "max_abs_diff_aggregate_vs_cumulative_parts_mm": {
+          "eais_global_output": 2894.796875,
+          "eais_global_output+pen_global_output": 2767.41357421875,
+          "eais_global_output+pen_global_output+smb_global_output": 2914.42578125,
+          "eais_global_output+pen_global_output+smb_global_output+wais_global_output": 0.00048828125
+        }
+      },
+      "larmip-ais/local": {
+        "aggregate": "ais_local_output.nc",
+        "max_abs_diff_aggregate_vs_cumulative_parts_mm": {
+          "eais_local_output": 3603.5107421875,
+          "eais_local_output+wais_local_output": 0.00048828125
+        }
+      },
+      "emulandice-ais/global": {
+        "aggregate": "output-gslr.nc",
+        "max_abs_diff_aggregate_vs_cumulative_parts_mm": {
+          "output-gslr-eais": 373.62396240234375,
+          "output-gslr-eais+output-gslr-pen": 350.2137145996094,
+          "output-gslr-eais+output-gslr-pen+output-gslr-wais": 3.0517578125e-05
+        }
+      },
+      "emulandice-ais/local": {
+        "aggregate": "output-lslr.nc",
+        "max_abs_diff_aggregate_vs_cumulative_parts_mm": {
+          "output-lslr-eais": 456.01177978515625,
+          "output-lslr-eais+output-lslr-wais": 3.0517578125e-05
+        }
+      }
+    },
+    "warnings": [
+      "emulandice-ais/output-gslr-eais.nc ends in 2100 (the grid goes to 2150)",
+      "emulandice-ais/output-gslr-pen.nc ends in 2100 (the grid goes to 2150)",
+      "emulandice-ais/output-gslr-wais.nc ends in 2100 (the grid goes to 2150)",
+      "emulandice-ais/output-gslr.nc ends in 2100 (the grid goes to 2150)",
+      "emulandice-ais/output-lslr-eais.nc ends in 2100 (the grid goes to 2150)",
+      "emulandice-ais/output-lslr-wais.nc ends in 2100 (the grid goes to 2150)",
+      "emulandice-ais/output-lslr.nc ends in 2100 (the grid goes to 2150)",
+      "emulandice-glaciers/output-gslr.nc ends in 2100 (the grid goes to 2150)",
+      "emulandice-glaciers/output-lslr.nc ends in 2100 (the grid goes to 2150)",
+      "emulandice-gris/output-gslr-gris.nc ends in 2100 (the grid goes to 2150)",
+      "emulandice-gris/output-lslr-gris.nc ends in 2100 (the grid goes to 2150)",
+      "facts-total/wf1e_global_total.nc: only valid through 2100; emulandice-ais, emulandice-glaciers, emulandice-gris end there, so 2110-2150 omit them",
+      "facts-total/wf1e_local_total.nc: only valid through 2100; emulandice-ais, emulandice-glaciers, emulandice-gris end there, so 2110-2150 omit them",
+      "facts-total/wf2e_global_total.nc: only valid through 2100; emulandice-glaciers, emulandice-gris end there, so 2110-2150 omit them",
+      "facts-total/wf2e_local_total.nc: only valid through 2100; emulandice-glaciers, emulandice-gris end there, so 2110-2150 omit them",
+      "facts-total/wf3e_global_total.nc: only valid through 2100; emulandice-glaciers, emulandice-gris end there, so 2110-2150 omit them",
+      "facts-total/wf3e_local_total.nc: only valid through 2100; emulandice-glaciers, emulandice-gris end there, so 2110-2150 omit them"
+    ],
+    "p50_last_definition": "final-year median over samples; with several sites, the median across sites of those per-site medians (not a pooled median over all samples and sites)",
+    "ok": true
+  },
+  "total_s": 3.5
+}

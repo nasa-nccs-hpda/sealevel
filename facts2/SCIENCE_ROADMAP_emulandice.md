@@ -65,13 +65,19 @@ There is **no seed, prior or science option** on the module's command line (`cli
    `facts2/patches/container/`, and register it in `CONTAINER_PATCHES` of `notebooks/run_coupling.py` (an existing example: `emulandice_glaciers_project.py`). The driver's shim binds it only for services whose image name matches.
    `CONTAINER_PATCHES` holds one file per image name; extend it to a list for several files.
 2. **Data changes (C): bind-mount the new data file** onto `/usr/local/lib/R/site-library/emulandice/extdata/<file>` in the same way.
-3. **R code changes (D, E): rebuild.** The R code is installed as a package (compiled lazy-load database), so editing `/emulandice/R/main.R` in a bind mount has **no effect**. Fork the repo, change `R/main.R`,
+3. **R code changes (D, E): no rebuild needed for `main.R` (corrected 2026-10-20).** The R code is installed as a package (compiled lazy-load database), so binding a file over `/emulandice/R/main.R` alone has **no effect**, which is
+   what this document said before. It does work when the patched `r_helper.py` evaluates the bound `main.R` into the package namespace before it calls `main()`: this is how `facts2/patches/container/emulandice_main.R` +
+   `emulandice_r_helper.py` already run (the speed-up below). **Edit `patches/container/emulandice_main.R` and re-run; it is bound for all three emulandice modules.** Its line numbers are those of the original shifted by -3 after line 798 (the
+   patch replaces lines 788-798 by 8); `diff patches/container/emulandice_main.orig.R patches/container/emulandice_main.R` shows the whole change. Other R files of the package (`read_data.R`, `plot_mme.R`) can probably be handled the same way
+   (evaluate them into the namespace first; not tried). For a change that must travel with the image rather than the repository: fork the repo, change `R/main.R`,
    build the image from its `Dockerfile` (it uses `renv`), give it a new tag. Then set `image:` of the three emulandice entries in `experiment-config.yaml` and regenerate the script. **Gotcha:** the generated script pulls
    an image only if `apptainer_experiments/sif/<service>-<version>.sif` does not exist; a new image under an old name is ignored. Use a new tag, or place your `.sif` at the expected path.
 4. **Contribute it** with a PR to `fact-sealevel/emulandice`; a new option also needs the registry entries (`emulandice-ais`, `-gris`, `-glaciers` YAML files, section `arguments`) and a registry PR.
 
-**Cost of testing.** Each module takes about **80-100 minutes whatever the sample count** (R single-threaded; at 100 and at 2000 samples the times were within about 10% of each other), and the three modules can run in parallel
-(`notebooks/run_coupling.py --share` / `--join`). To test one module, run its container by hand with the arguments from the generated script (block `# --- emulandice-ais ---` of `experiment-apptainer.sh`).
+**Cost of testing (corrected 2026-10-20).** The first runs took **80-100 minutes per module whatever the sample count** (at 100 and at 2000 samples the times were within about 10% of each other). That was not the emulator: for each decade year the R code
+looked up the temperature of every simulation row (~4,800) with a `dplyr` filter and `print()` calls, about 10 minutes a year (`main.R` 788-798). `patches/container/emulandice_main.R` does the same lookup with one `match()`, the outputs are bit-identical
+(`facts2/patches/README.md`), and the driver binds it. Times now, inside the full 2000-sample experiment: emulandice-gris 2.6 min, -ais 8.2 min, -glaciers 18.4 min (19 regions x 9 years of Gaussian-process fits, now the dominant cost). The three modules can still run in
+parallel (`notebooks/run_coupling.py --share` / `--join`). To test one module, run its container by hand with the arguments from the generated script (block `# --- emulandice-ais ---` of `experiment-apptainer.sh`).
 For quick R experiments, `main()` can predict a single year (`expt = "default"`, `years = 2100`) in less time than the 9-decade run; that path was **not timed or validated here**.
 
 ## 6. How to check that you changed what you meant to

@@ -297,7 +297,7 @@ local results are per site, global results are one global mean. Every total is s
 4. *Extreme sea level.* `extremesealevel-pointsoverthreshold` runs once per workflow on the local total, with about 1,300 tide-gauge records, and gives a height allowance and an amplification
    factor for 2100.
 
-**Size and cost.** 30 generated services, 12 distinct images (about 9 GB), about 33 GB of input data. About 6 hours here; each emulandice module takes 80-90 minutes whatever the sample count.
+**Size and cost.** 30 generated services, 12 distinct images (about 9 GB), about 33 GB of input data. About 21 minutes here with the speed-up patches below (clean run, 1 + 5 instances of the driver, 12 cores); the same experiment took 5.5 hours before them (each emulandice module 80-90 minutes whatever the sample count, fair-temperature 14.5 minutes), with bit-identical outputs.
 
 **Differences from the published entry.** `ipccar5-icesheets` is left out (in the catalog command, not in its config); the current registry's images ran, not the catalog's older pins; FEB's extra
 `all-modules` workflow is removed; `emulandice-glaciers` reads `gsat.nc`, as the catalog config does.
@@ -351,11 +351,13 @@ to the committed ones apart from the creation date and the absolute workspace pa
 
 ### Running
 ```bash
-# one instance, sequential (about 4.6 h: the script runs one service at a time; fair-temperature takes 14.5 min and each emulandice module 1.3-1.6 h at any sample count)
+# one instance, sequential (the script runs one service at a time; the service times add up to about 40 minutes, not measured as one run)
 python notebooks/run_coupling.py [-v]                        # pulls each distinct image once, runs, validates every output, writes <experiment>/coupling_results.json
 # the same work shared by several instances of the script (this is how the committed results were produced): claims are directories in <experiment>/.claims
 python notebooks/run_coupling.py --share &                   # first instance
 python notebooks/run_coupling.py --join &                    # as many more as there are independent services; each takes the next unclaimed service
+# measured: 21m17s from start to the last output with 1 --share and 5 --join instances; start the joins after fair-temperature has finished (about 1.5 min), because
+# emulandice reads its gsat.nc. The longest step is then emulandice-glaciers (18 min: 19 regions x 9 years of emulator fits, single-threaded R)
 python notebooks/run_coupling.py --skip-run                  # when all have finished: validate the outputs and write the JSON
 python notebooks/summarize_coupling.py                       # figures facts2/figures/coupling_585_*.png, <experiment>/coupling_summary.json and coupling_tables.md
 ```
@@ -364,7 +366,7 @@ Options: `--resume` skips services whose paths all exist (continue a stopped run
 the driver puts a shim for `apptainer` first on `PATH` that (a) runs emulandice with `--pwd /tmp` instead of the read-only `/` (R writes `Rplots.pdf` there),
 (b) binds a large directory (on `/dev/shm`) over `/tmp` for emulandice (the container's own `/tmp` is a 16 MB tmpfs; the glaciers run at 2000 samples fills it, R stops writing
 in the middle of 2080 without a message and the wrapper later fails or, worse, returns NaN years) and a patched `emulandice_glaciers_project.py` that keeps R's CSV and raises when
-it is incomplete (`facts2/patches/container/`), (c) implements the gate, resume and claim options. Run it in an environment isolated from the system conda (see Tests).
+it is incomplete (`facts2/patches/container/`), (c) implements the gate, resume and claim options, and (d) binds the speed-up patches of `facts2/patches/container/`: `emulandice_main.R` with `emulandice_r_helper.py` for the three emulandice modules (the R code looked up the temperature of each of ~4,800 simulation rows per decade year with a `dplyr` filter, 10 minutes a year; one `match()` does the same) and `fair_temperature_project.py` (the 2,000 independent FaIR runs in a process pool, `FAIR_NPROC`). Both give bit-identical outputs (all 83 `.nc` files, 570 variables, compared with the slow run); see `facts2/patches/README.md`. Run it in an environment isolated from the system conda (see Tests).
 emulandice emulates 2020-2100 only, so wf1e, wf2e and wf3e are valid through 2100; the summary compares all workflows in 2100.
 
 ### Checks the driver makes
@@ -377,8 +379,8 @@ output exists per workflow and is finite; for the four modules above, the aggreg
 
 ### Tests
 `python3 notebooks/tests/test_run_coupling.py -v` (standard library; the 7 netCDF tests also need xarray, netCDF4 and numpy, see the command in the BAM Tests section).
-31 tests: script parsing, the double-count check for each module family, preflight (double count, foreign workspace, missing bind source), the PATH shim executed against a
-fake `apptainer` (non-run passthrough, emulandice working directory, gate, resume, claims, waiting for inputs), `regenerate` (catalog command and answers, config fix-ups,
+33 tests: script parsing, the double-count check for each module family, preflight (double count, foreign workspace, missing bind source), the PATH shim executed against a
+fake `apptainer` (non-run passthrough, emulandice working directory, gate, resume, claims, waiting for inputs, which patched files each service gets, simultaneous joins getting different log files), `regenerate` (catalog command and answers, config fix-ups,
 existing values kept, refusal to overwrite) and output validation on synthetic files (consistent total passes; a total that is not the sum of its items, a missing file, a wrong
 sample count fail; base-year column accepted; a module ending in 2100 is reported and the total matches the partial sum; extreme-sea-level output required per workflow). Each safeguard was also deliberately broken in a scratch copy
 (16 mutations: the double-count regex and the larmip part list, the preflight checks, each shim feature including the large `/tmp` and the container patch, the config fix-ups,

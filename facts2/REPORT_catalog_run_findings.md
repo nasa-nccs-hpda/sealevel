@@ -83,8 +83,39 @@ while the registry default is `gesla_data_full/` (symlink).
 - **Years.** `kopp14-verticallandmotion` and `ssp-landwaterstorage` outputs have 15 years (2005 plus the 14 projection years); emulandice has 9 (2020-2100, see 1b); the others have 14.
   facts-total subsets correctly (the totals equal the sum of the 14-year columns); anything summing the files by hand must select years first.
 - **Run time.** The generated script runs its services one after the other. With 2000 samples `fair-temperature` took 14.5 min and each emulandice module
-  (single-threaded R, one decade per 7-11 min) over 1.5 hours, so a 12-core node sits almost idle. The driver can run several instances of the same
-  script that share the work through claim directories (`--share` / `--join`); this reduced the experiment from roughly 4 hours sequential to the time of the slowest
-  module. A scheduler in FEB (stage 2 services are independent) would make this unnecessary.
+  (single-threaded R) 78-92 minutes, so a 12-core node sat almost idle. The driver can run several instances of the same
+  script that share the work through claim directories (`--share` / `--join`). Both big costs turned out to be avoidable without touching the science, see section 6
+  (21 minutes for the whole experiment). A scheduler in FEB (stage 2 services are independent) would still make the instances unnecessary.
 - **Image pulls.** The script pulls the same image once per service name (30 pulls for 12 distinct images); the driver pulls each once and copies it.
 - **TLM data.** `tlm_sterodynamics_cmip6_data.tgz` is 31 GB; a single Zenodo stream ran at about 9 MB/s, eight parallel byte ranges at 15-45 MB/s.
+
+## 6. Why the run took 5.5 hours, and the same experiment in 21 minutes (2026-10-20)
+A subject-matter expert expected about 30 minutes; the 5.5 hours were real but mostly avoidable. 5.5 hours was the wall time of the whole first campaign, including the failed attempts (sections 2, 3, 3b); the best case of that run, without the
+failures, was about 1.8 h (fair-temperature, then the slowest emulandice module). Profiling the first module (emulandice-gris, instrumented copy of `main.R` with timestamps) found two things:
+
+1. **emulandice: a row-by-row lookup, not the emulator.** In `main.R` (lines 788-798 of the 0.2.0 image) every decade year starts with a loop over all ~4,800 simulation rows: a `dplyr::filter` on the forcing table plus several `print()` calls per row,
+   about 0.1 s a row, **about 10 minutes a year, 78-92 minutes for the nine years**, independent of the sample count (that is why 100 and 2000 samples took the same time). The Gaussian-process fit itself takes 4 s for Greenland. The author's own comment
+   above the loop reads "xxx improve: better row-wise code?". One `match()` on a (GCM, scenario) key does the same lookup; an assertion keeps the original's requirement of exactly one forcing row per key. The seed, the random draws and the fits are untouched, and the
+   `print()` calls only wrote into R's log file.
+2. **fair-temperature: 2,000 independent FaIR runs in a serial loop** (14.5 min, 14 min of CPU). A process pool (`FAIR_NPROC`, default all cores) runs them in 1.5 minutes. The run indices are drawn before the pool starts and the order is kept.
+
+Both are bound into the images by the driver (`CONTAINER_PATCHES`, files in `patches/container/` with `.orig` copies; `patches/README.md`). **Nothing in the science changed, and this was checked, not assumed:** the clean run was compared with the slow, verified run
+file by file: all 83 NetCDF files, 570 variables, `array_equal` with NaNs equal: **0 differences** (global and local, every module, all totals, every extreme-sea-level file). The first checks were emulandice-gris (all 9 years) and fair-temperature (gsat, climate, oceantemp, ohc).
+
+**The clean run** (experiment copy `coupling-585-260603-fast`, same config and script, 2000 samples, new output directory, 12 cores, images cached; one `--share` instance and five `--join` instances started after fair-temperature finished):
+
+| Step | Time |
+|---|---|
+| fair-temperature | 88 s (was 869 s) |
+| emulandice-gris / -ais / -glaciers | 156 s / 491 s / 1,105 s (were 4,680 / 5,030 / 5,524 s) |
+| tlm-sterodynamics | 222 s |
+| larmip-ais, bamber19, kopp14, ssp-landwaterstorage and the rest | 10-37 s each |
+| facts-total, extreme sea level (after glaciers) | about 1 min |
+| **Wall time, start to last output** | **21 min 17 s** (17:23:13-17:44:30); 5.5 h before |
+
+The critical path is fair-temperature (1.5 min) then emulandice-glaciers (18.4 min: 19 regions x 9 years of emulator fits, single-threaded R) then the totals and extreme sea level. Validation: `OK (58 files, 12 totals)` with the same warnings as before (emulandice ends in 2100).
+Further speed-up would need glaciers to be split by year or region, which changes the random-number stream (the melt and collapse samples are drawn once, in the first year, and reused) and so needs a decision, not just a patch; it was not done.
+
+Other things found on the way: (a) two joins started within the same second chose the same log file name and wrote into one file (the per-service times of the 21-minute run could not be read from the logs for that reason); fixed with an `O_EXCL` reservation (`reserve_join_log`, tested).
+(b) The first instance validates when its own script returns, which can be seconds before a joined instance writes the last extreme-sea-level file (it said `MISSING extreme sea level output for wf2e`, two seconds early); run `--skip-run` once all instances have finished, as the README says.
+(c) Not measured: a single instance (sequential) run with the patches; the sum of the service times is about 40 minutes.
