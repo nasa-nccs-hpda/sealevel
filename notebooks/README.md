@@ -360,6 +360,7 @@ python notebooks/run_coupling.py --join &                    # as many more as t
 # emulandice reads its gsat.nc. The longest step is then emulandice-glaciers (18 min: 19 regions x 9 years of emulator fits, single-threaded R)
 python notebooks/run_coupling.py --skip-run                  # when all have finished: validate the outputs and write the JSON
 python notebooks/summarize_coupling.py                       # figures facts2/figures/coupling_585_*.png, <experiment>/coupling_summary.json and coupling_tables.md
+python notebooks/plot_totals_onepager.py                      # one page for readers new to the run: what each total is made of (needs coupling_summary.json), facts2/figures/coupling_585_onepager.png
 ```
 Options: `--resume` skips services whose paths all exist (continue a stopped run), `--gate SERVICE=FILE` holds a service until a file exists (used to start while the
 31 GB archive was still downloading), `--allow-double-count` runs even if a facts-total job lists an aggregate with its parts. The generated script is never edited:
