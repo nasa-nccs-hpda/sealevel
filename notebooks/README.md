@@ -379,8 +379,8 @@ output exists per workflow and is finite; for the four modules above, the aggreg
 
 ### Tests
 `python3 notebooks/tests/test_run_coupling.py -v` (standard library; the 7 netCDF tests also need xarray, netCDF4 and numpy, see the command in the BAM Tests section).
-33 tests: script parsing, the double-count check for each module family, preflight (double count, foreign workspace, missing bind source), the PATH shim executed against a
-fake `apptainer` (non-run passthrough, emulandice working directory, gate, resume, claims, waiting for inputs, which patched files each service gets, simultaneous joins getting different log files), `regenerate` (catalog command and answers, config fix-ups,
+62 tests in the folder; `test_run_coupling.py` has 37: script parsing, the double-count check for each module family, preflight (double count, foreign workspace, missing bind source), the PATH shim executed against a
+fake `apptainer` (non-run passthrough, emulandice working directory, gate, resume, claims, waiting for inputs, which patched files each service gets, simultaneous joins getting different log files), the patch-drift check against a fake image, `regenerate` (catalog command and answers, config fix-ups,
 existing values kept, refusal to overwrite) and output validation on synthetic files (consistent total passes; a total that is not the sum of its items, a missing file, a wrong
 sample count fail; base-year column accepted; a module ending in 2100 is reported and the total matches the partial sum; extreme-sea-level output required per workflow). Each safeguard was also deliberately broken in a scratch copy
 (16 mutations: the double-count regex and the larmip part list, the preflight checks, each shim feature including the large `/tmp` and the container patch, the config fix-ups,

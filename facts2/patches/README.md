@@ -27,8 +27,10 @@ original, slow run and are bit-identical (see below). Each has an `.orig` copy n
 | Patched file (`container/`) | Image | Original cost | Change | Now |
 |---|---|---|---|---|
 | `emulandice_main.R` (+ `emulandice_r_helper.py`, which loads it) | emulandice-ais, -gris, -glaciers | 78-92 min each, at any sample count | for every decade year the R code looked up the temperature of each of the ~4,800 simulation rows with a `dplyr::filter` and `print()` calls (0.1 s a row, about 10 minutes a year). One `match()` does the same lookup (an assertion keeps the original's "exactly one forcing row per GCM/scenario" requirement) | gris 2.6 min, ais 8.2 min, glaciers 18.4 min (19 regions, 9 years of Gaussian-process fits; now the longest step), measured inside the full run |
-| `fair_temperature_project.py` | fair-temperature | 14.5 min | the 2,000 FaIR runs were a serial `for` loop; they are independent, so they run in a process pool (`FAIR_NPROC`, default all cores). The run indices are drawn before the pool starts and the order is kept | 1.5 min on 12 cores |
+| `fair_temperature_project.py` | fair-temperature | 14.5 min | the 2,000 FaIR runs were a serial `for` loop; they are independent, so they run in a process pool (`FAIR_NPROC`, default: the CPUs the scheduler allows this process, `os.sched_getaffinity`; it prints the worker count to the run log). The run indices are drawn before the pool starts and the order is kept | 1.5 min on 12 cores |
 | `emulandice_glaciers_project.py` | emulandice-glaciers | | see "Container patch" below | |
+
+**Drift check.** A patch replaces a whole file, so a newer image with a changed file would be silently undone by it. Before a run, `run_coupling.py` reads each patched file out of the pulled images (`apptainer exec ... cat`) and compares it with the `.orig` copy the patch was written against; a difference stops the run with a message naming the image and file. Then re-derive the patch from the new file (or pin the old image).
 
 Checked for bit-identity against the original run (`array_equal`, maximum difference 0.0): emulandice-gris global and local, all 9 years; fair-temperature gsat, climate (all
 scenario groups), oceantemp and ohc, all 2,000 samples. The whole fast experiment is compared with the slow one in `../REPORT_catalog_run_findings.md`, section 5.

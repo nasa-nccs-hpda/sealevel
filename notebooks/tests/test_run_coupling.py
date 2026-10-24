@@ -281,6 +281,54 @@ class ServiceTimes(unittest.TestCase):
         self.assertEqual(s["a-1"]["start"], "06:00:00")
 
 
+class PatchDrift(unittest.TestCase):
+    """patch_drift compares the file inside the image with the .orig copy; the fake apptainer `exec ... cat PATH` prints $IMAGE_FILE."""
+
+    def setUp(self):
+        self.d = tempfile.mkdtemp()
+        self.cfg = rc.Config(workspace=self.d, experiment="exp")
+        os.makedirs(os.path.join(self.d, "patches/container"))
+        os.makedirs(self.cfg.sif_dir)
+        for name, text in (("fair_temperature_project.py", "patched"), ("fair_temperature_project.orig.py", "original")):
+            with open(os.path.join(self.d, "patches/container", name), "w") as f:
+                f.write(text)
+        with open(os.path.join(self.cfg.sif_dir, "fair-temperature-0.2.1.sif"), "w"):
+            pass
+        self.image_file = os.path.join(self.d, "inside.txt")
+        fake = os.path.join(self.d, "fakebin")
+        os.makedirs(fake)
+        with open(os.path.join(fake, "apptainer"), "w") as f:
+            f.write('#!/usr/bin/env bash\n[ "$1" = exec ] && [ "$3" = cat ] || exit 2\ncat "' + self.image_file + '"\n')
+        os.chmod(os.path.join(fake, "apptainer"), 0o755)
+        self.env = dict(os.environ, PATH=fake + os.pathsep + os.environ["PATH"])
+
+    def inside(self, text):
+        with open(self.image_file, "w") as f:
+            f.write(text)
+        return rc.patch_drift(self.cfg, self.env, mock.MagicMock())
+
+    def test_image_file_equal_to_orig_is_fine(self):
+        self.assertEqual(self.inside("original"), [])
+
+    def test_changed_image_file_is_reported(self):
+        problems = self.inside("a newer version")
+        self.assertEqual(len(problems), 1)
+        self.assertIn("fair-temperature-0.2.1.sif", problems[0])
+        self.assertIn("fair_temperature_project.orig.py", problems[0])
+
+    def test_unreadable_image_file_is_reported(self):
+        os.remove(self.image_file) if os.path.exists(self.image_file) else None
+        rc_problems = rc.patch_drift(self.cfg, self.env, mock.MagicMock())
+        self.assertEqual(len(rc_problems), 1)
+        self.assertIn("cannot read", rc_problems[0])
+
+    def test_patch_without_orig_or_without_matching_image_is_skipped(self):
+        os.remove(os.path.join(self.d, "patches/container/fair_temperature_project.orig.py"))
+        self.assertEqual(self.inside("anything"), [])
+        os.remove(os.path.join(self.cfg.sif_dir, "fair-temperature-0.2.1.sif"))
+        self.assertEqual(self.inside("anything"), [])
+
+
 class Regenerate(unittest.TestCase):
     def test_refuses_to_overwrite_an_existing_config(self):
         d = tempfile.mkdtemp()
@@ -319,7 +367,8 @@ class Regenerate(unittest.TestCase):
         self.assertEqual([answers[1 + 3 * i] for i in range(6)], list(rc.WORKFLOWS))
         self.assertEqual(answers[-2], "n")
         self.assertEqual(calls[1][0][0], "generate-apptainer")
-        text = open(cfg.config_yaml).read()
+        with open(cfg.config_yaml) as f:
+            text = f.read()
         self.assertNotIn("all-modules", text)                      # the catalog has no such workflow
         self.assertIn("wf1e", text)
         self.assertRegex(text, r"pipeline-id:\n        abcd\n")
@@ -342,7 +391,8 @@ class Regenerate(unittest.TestCase):
 
         with mock.patch.object(rc, "feb", side_effect=fake_feb):
             rc.regenerate(cfg, mock.MagicMock())
-        text = open(cfg.config_yaml).read()
+        with open(cfg.config_yaml) as f:
+            text = f.read()
         self.assertIn('"/mine/m"', text)
         self.assertNotIn(d + "/data", text)
 

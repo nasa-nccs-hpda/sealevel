@@ -167,12 +167,18 @@ def fair_project_temperature(
         sample_idx = np.arange(nsamps)
 
     # Run the FAIR model
-    # PATCH (sealevel repo): the runs are independent, so they are spread over worker processes (FAIR_NPROC, default: all cores).
+    # PATCH (sealevel repo): the runs are independent, so they are spread over worker processes (FAIR_NPROC, default: the CPUs this process may use,
+    # i.e. the scheduler allocation, not every core of the node).
     # The results are the same as in the serial loop, in the same order: run_idx is drawn above, before any worker starts, and
     # Pool.map keeps the order. facts2/patches/README.md.
     global _FAIR_PARS, _FAIR_EMIS
     _FAIR_PARS, _FAIR_EMIS = pars, emis
-    nproc = min(int(os.environ.get("FAIR_NPROC", os.cpu_count() or 1)), len(run_idx))
+    try:
+        allowed = len(os.sched_getaffinity(0))
+    except AttributeError:
+        allowed = os.cpu_count() or 1
+    nproc = max(1, min(int(os.environ.get("FAIR_NPROC", allowed)), len(run_idx)))
+    print(f"fair-temperature: {len(run_idx)} FaIR runs on {nproc} worker process(es) ({allowed} CPUs available)", flush=True)
     if nproc > 1:
         with multiprocessing.get_context("fork").Pool(nproc) as pool:
             results = pool.map(_one_fair_run, [int(i) for i in run_idx], chunksize=max(1, len(run_idx) // (nproc * 8)))

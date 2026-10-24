@@ -254,7 +254,7 @@ CWD_RULES = {"emulandice": "/tmp"}
 # loads the patched main.R into the installed package (diffs: facts2/patches/container/emulandice_main.orig.R, emulandice_r_helper.orig.py).
 #
 # "fair-temperature": the 2,000 FaIR runs were a serial Python loop (14.5 minutes). They are independent, so the patched file spreads them over worker
-# processes (FAIR_NPROC, default all cores): 1.5 minutes on 12 cores, bit-identical outputs (checked: gsat, climate, oceantemp, ohc).
+# processes (FAIR_NPROC, default the CPUs the scheduler allows): 1.5 minutes on 12 cores, bit-identical outputs (checked: gsat, climate, oceantemp, ohc).
 CONTAINER_PATCHES = {
     "fair-temperature": [("patches/container/fair_temperature_project.py",
                           "/opt/fair-temperature/src/fair_temperature/fair_temperature_project.py")],
@@ -263,6 +263,32 @@ CONTAINER_PATCHES = {
     "emulandice-glaciers": [("patches/container/emulandice_glaciers_project.py",
                              "/opt/emulandice/src/emulandice/emulandice_glaciers_project.py")],
 }
+
+def patch_drift(cfg: Config, env: Dict[str, str], log) -> List[str]:
+    """Problems found when comparing the file inside each pulled image with the `*.orig.*` copy the patch was written against.
+    A patch is bound over a whole file, so if a newer image changed that file the patch would silently undo the change."""
+    problems: List[str] = []
+    for sif in sorted(glob.glob(os.path.join(cfg.sif_dir, "*.sif"))):
+        name = os.path.basename(sif)
+        for key, files in CONTAINER_PATCHES.items():
+            if key not in name:
+                continue
+            for host, cont in files:
+                root, ext = os.path.splitext(os.path.join(cfg.workspace, host))
+                orig = root + ".orig" + ext
+                if not (os.path.isfile(root + ext) and os.path.isfile(orig)):
+                    continue
+                r = subprocess.run(["apptainer", "exec", sif, "cat", cont], env=env, capture_output=True)
+                with open(orig, "rb") as f:
+                    orig_bytes = f.read()
+                if r.returncode != 0:
+                    problems.append(f"{name}: cannot read {cont} to compare with {os.path.basename(orig)}: {r.stderr.decode()[-200:].strip()}")
+                elif r.stdout != orig_bytes:
+                    problems.append(f"{name}: {cont} differs from {os.path.basename(orig)}, the file {os.path.basename(host)} was written against; "
+                                    f"the image changed, so re-derive the patch (facts2/patches/README.md) or pin the old image")
+    log.info(f"patch drift check: {'OK' if not problems else str(len(problems)) + ' problem(s)'}")
+    return problems
+
 
 # Services that need a /tmp larger than the 16 MB tmpfs a --containall container gets (`sessiondir max size = 16` in apptainer.conf). emulandice keeps
 # its working files in /tmp; with 2000 samples the glaciers run writes a CSV of more than 12 MB plus other files, the tmpfs fills up in the middle of
@@ -397,7 +423,10 @@ def run_script(cfg: Config, log) -> Dict:
     t0 = time.time()
     pulled = 0 if cfg.join else pull_images(cfg, env, log)
     pull_s = time.time() - t0
-    if pulled < 0:
+    drift = [] if (cfg.join or pulled < 0) else patch_drift(cfg, env, log)
+    for problem in drift:
+        log.error(problem)
+    if pulled < 0 or drift:
         shutil.rmtree(run_dir, ignore_errors=True)
         return {"exit": 1, "wall_s": 0.0, "service_s": {}, "images_pulled": 0}
     timing = ["/usr/bin/time", "-v"] if os.path.exists("/usr/bin/time") else []
@@ -416,7 +445,8 @@ def run_script(cfg: Config, log) -> Dict:
     service_s = {n: (v["end"] - v["start"]) % 86400 for n, v in svc.items() if "start" in v and "end" in v}
     rss = re.search(r"Maximum resident set size \(kbytes\): (\d+)", text)
     res = {"exit": rc, "wall_s": round(wall, 1), "image_prep_s": round(pull_s, 1), "images_pulled_by_driver": pulled,
-           "service_s": service_s, "max_rss_mb": round(int(rss.group(1)) / 1024, 1) if rss else None}
+           "service_s": service_s, "cpus_available": len(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else os.cpu_count(),
+           "max_rss_mb": round(int(rss.group(1)) / 1024, 1) if rss else None}
     log.info(f"run exit={rc} wall={wall:.0f}s (+{pull_s:.0f}s image prep)")
     if rc != 0:
         log.error("tail of run.log:\n" + "\n".join(l for l in text.splitlines() if "warn" not in l)[-1800:])
