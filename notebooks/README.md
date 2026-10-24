@@ -351,7 +351,7 @@ to the committed ones apart from the creation date and the absolute workspace pa
 
 ### Running
 ```bash
-# one instance, sequential (the script runs one service at a time; measured 2026-10-24: 45 minutes, service times adding up to 46.6 minutes; several instances: about 21 minutes)
+# one instance, sequential (the script runs one service at a time; measured 2026-10-24: 45 minutes on a busy node, service times adding up to 46.6 minutes; two instances (one `--share`, one `--join` after fair-temperature): 25 minutes; six: 21 minutes)
 python notebooks/run_coupling.py [-v]                        # pulls each distinct image once, runs, validates every output, writes <experiment>/coupling_results.json
 # the same work shared by several instances of the script (this is how the committed results were produced): claims are directories in <experiment>/.claims
 python notebooks/run_coupling.py --share &                   # first instance
